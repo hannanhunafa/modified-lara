@@ -1,2 +1,2 @@
 AlexNet - Multitask
-python main.py --train --data_augmentation standard --model resnet50 --filename alexnet-multitask
+python main.py --train --model alexnet --filename alexnet-multitask
