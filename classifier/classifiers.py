@@ -27,6 +27,9 @@ from sklearn.metrics import confusion_matrix
 import pickle
 import math
 
+#custom
+import time
+
 clf_label = [ 'leaf_multitask' , 'leaf_disease', 'leaf_severity', 'symptom' ]
 
 def cnn_model(model_name, pretrained=False, num_classes=(5, 5)):
@@ -399,8 +402,11 @@ class MultiTaskClf:
         record['val_sev_acc'] = []
 
         best_fs = 0.0
-
+        #custom
+        time_start = time.time()
+        #end_custo
         for epoch in range(self.opt.epochs):
+
             # Training
             train_metrics = self.train(train_loader, model, criterion_train, optimizer, self.opt.data_augmentation)
             self.print_info(data_type='TRAIN', metrics=train_metrics, epoch=epoch, epochs=self.opt.epochs)
@@ -434,6 +440,9 @@ class MultiTaskClf:
             fp = open('log/' + clf_label[self.opt.select_clf] + '/' + self.opt.filename + '.pkl', 'wb')
             pickle.dump(record, fp)
             fp.close()
+        #custom
+        print("Total time: ", time.time() - time_start, "seconds")
+        #end_custom
 
         # Plot
         # static_graph(np.array(record['train_dis_acc'])/100, np.array(record['val_dis_acc'])/100)
@@ -664,7 +673,7 @@ class OneTaskClf:
         # Data
         train_loader, val_loader, _ = data_loader(self.opt)
 
-        Model
+        #Model
         model = cnn_model(self.opt.model, self.opt.pretrained, 5)
         
         
@@ -693,8 +702,11 @@ class OneTaskClf:
         record['val_acc'] = []
 
         best_fs = 0.0
-
+        #custom
+        start_time = time.time()
+        #end custom
         for epoch in range(self.opt.epochs):
+
             # Training
             train_metrics = self.train(train_loader, model, criterion_train, optimizer, self.opt.data_augmentation)
             self.print_info(data_type='TRAIN', metrics=train_metrics, epoch=epoch, epochs=self.opt.epochs)
@@ -727,6 +739,9 @@ class OneTaskClf:
 
             pickle.dump(record, fp)
             fp.close()
+        #custom
+        print("Total time: ", time.time() - start_time, "seconds")
+        #endcustom
 
         # Plot
         # static_graph(np.array(record['train_acc'])/100, np.array(record['val_acc'])/100)
