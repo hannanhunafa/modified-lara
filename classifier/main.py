@@ -34,7 +34,7 @@ if __name__ == "__main__":
         default="resnet50",
     )
     parser.add_argument(
-        "--epochs", type=int, help="Set the number of epochs.", default=80
+        "--epochs", type=int, help="Set the number of epochs.", default = 100
     )
     parser.add_argument(
         "--pretrained",
