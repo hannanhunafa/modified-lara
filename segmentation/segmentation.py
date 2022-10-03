@@ -1,9 +1,12 @@
+from contextlib import asynccontextmanager
 import os
 import numpy as np
 from tqdm import tqdm
 
 import torch
 import torch.nn as nn
+from torchvision.utils import save_image
+from PIL import Image
 
 import utils.augmentations as aug
 from utils.customdatasets import SegmentationLoader
@@ -344,7 +347,8 @@ class SemanticSegmentation:
         
         test_metrics = { 'miou': [], 'acc': [] }
         severity = { 'true': np.array([]), 'pred': np.array([]) }
-
+        #custom
+        file_count = 0
         with torch.no_grad():
             for imgs, labels, cls in test_loader:
                 # Loading images on gpu
@@ -361,18 +365,43 @@ class SemanticSegmentation:
                 test_metrics['acc'].append(metrics[1])
                 
                 # Plot
+                # custom
+                imgur = imgs.cpu()
+
                 imgs = imgs.cpu().numpy()[:, ::-1, :, :]
                 imgs = np.transpose(imgs, [0,2,3,1])
                 
-                f, axarr = plt.subplots(len(imgs), 3, figsize=(16, 11.5))
+                # f, axarr = plt.subplots(len(imgs), 3, figsize=(16, 11.5))
+                
+                # for j in range(len(imgs)):
+                #     # Original image
+                #     axarr[j][0].imshow(imgs[j])
+                #     # True labels
+                #     axarr[j][1].imshow(test_dataset.decode_segmap(labels.cpu().numpy()[j]))
+                #     # Predicted labels
+                #     axarr[j][2].imshow(test_dataset.decode_segmap(labels_pred.cpu().numpy()[j]))
+                
+                #     # Compute severity
+                #     aux = labels.cpu().numpy()[j]
+                #     severity['true'] = np.append(severity['true'], (aux==2).sum() / ((aux==1).sum() + (aux==2).sum()))
+                    
+                #     aux = labels_pred.cpu().numpy()[j]
+                #     severity['pred'] = np.append(severity['pred'], (aux==2).sum() / ((aux==1).sum() + (aux==2).sum()))
+                
+                # plt.setp(plt.gcf().get_axes(), xticks=[], yticks=[])
+                # plt.subplots_adjust(wspace=0.05, hspace=0.05)
+                # plt.show()
+
                 
                 for j in range(len(imgs)):
-                    # Original image
-                    axarr[j][0].imshow(imgs[j])
-                    # True labels
-                    axarr[j][1].imshow(test_dataset.decode_segmap(labels.cpu().numpy()[j]))
-                    # Predicted labels
-                    axarr[j][2].imshow(test_dataset.decode_segmap(labels_pred.cpu().numpy()[j]))
+                    
+                    # f, axarr = plt.subplots(3, figsize=(16, 11.5))
+                    # # Original image
+                    # axarr[0].imshow(imgs[j])
+                    # # True labels
+                    # axarr[1].imshow(test_dataset.decode_segmap(labels.cpu().numpy()[j]))
+                    # # Predicted labels
+                    # axarr[2].imshow(test_dataset.decode_segmap(labels_pred.cpu().numpy()[j]))
                 
                     # Compute severity
                     aux = labels.cpu().numpy()[j]
@@ -380,10 +409,16 @@ class SemanticSegmentation:
                     
                     aux = labels_pred.cpu().numpy()[j]
                     severity['pred'] = np.append(severity['pred'], (aux==2).sum() / ((aux==1).sum() + (aux==2).sum()))
+                    svr = (aux==2).sum() / ((aux==1).sum() + (aux==2).sum())
+                    svr = svr*100
+                    file_count += 1
+                    if os.path.isdir('scoring/' + self.opt.filename)==False:
+                        os.makedirs('scoring/' + self.opt.filename)
+                    save_image(imgur[j], 'scoring/' +  self.opt.filename + '/' + str(file_count) + '-' + str('{0:.2f}'.format(svr)) + '.jpg')
                 
-                plt.setp(plt.gcf().get_axes(), xticks=[], yticks=[])
-                plt.subplots_adjust(wspace=0.05, hspace=0.05)
-                plt.show()
+                # plt.setp(plt.gcf().get_axes(), xticks=[], yticks=[])
+                # plt.subplots_adjust(wspace=0.05, hspace=0.05)
+                # plt.show()
 
         miou = np.mean(test_metrics['miou'])
         acc = np.mean(test_metrics['acc'])

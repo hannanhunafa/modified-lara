@@ -81,10 +81,10 @@ if __name__ == "__main__":
     if options.select_clf < 3:
         parser.add_argument("--images_dir", type=str, default="dataset/leaf")
         Clf = MultiTaskClf(parser) if options.select_clf == 0 else OneTaskClf(parser)
-
+        
     # Symptom Dataset
     else:
-        parser.add_argument("--images_dir", type=str, default="dataset/symptom")
+        parser.add_argument("--images_dir", type=str, default="dataset/tomato")
         Clf = OneTaskClf(parser)
 
     if options.train:
@@ -96,3 +96,4 @@ if __name__ == "__main__":
 
         else:
             y_true, y_pred = Clf.run_test()
+    

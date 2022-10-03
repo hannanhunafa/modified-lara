@@ -489,7 +489,7 @@ class MultiTaskClf:
         labels_dis = [ 'Healthy', 'Leaf miner', 'Rust', 'Phoma', 'Cercospora' ]
 
         # Confusion matrix
-        cm = confusion_matrix(y_true_dis, y_pred_dis, list(range(0,5)))
+        cm = confusion_matrix(y_true_dis, y_pred_dis, labels = list(range(0,5)))
         plot_confusion_matrix(cm=cm, target_names=labels_dis, title=' ', output_name= clf_label[self.opt.select_clf] + '/' + self.opt.filename + '_dis')
 
         # Severity
@@ -503,7 +503,7 @@ class MultiTaskClf:
         labels_sev = [ 'Healthy', 'Very low', 'Low', 'High', 'Very high' ]
 
         # Confusion matrix
-        cm = confusion_matrix(y_true_sev, y_pred_sev, list(range(0,5)))
+        cm = confusion_matrix(y_true_sev, y_pred_sev, labels = list(range(0,5)))
         plot_confusion_matrix(cm=cm, target_names=labels_sev, title=' ', output_name= clf_label[self.opt.select_clf] + '/' + self.opt.filename + '_sev')
 
         f.close()
@@ -664,8 +664,10 @@ class OneTaskClf:
         # Data
         train_loader, val_loader, _ = data_loader(self.opt)
 
-        # Model
+        Model
         model = cnn_model(self.opt.model, self.opt.pretrained, 5)
+        
+        
 
         # Criterion
         criterion_train = nn.CrossEntropyLoss() if self.opt.data_augmentation != 'bc+' else torch.nn.KLDivLoss(reduction='batchmean')
@@ -770,7 +772,7 @@ class OneTaskClf:
             labels = [ 'Healthy', 'Very low', 'Low', 'High', 'Very high' ]
 
         # Confusion matrix
-        cm = confusion_matrix(y_true, y_pred, list(range(0,5)))
+        cm = confusion_matrix(y_true, y_pred, labels = list(range(0,5)))
         plot_confusion_matrix(cm=cm, target_names=labels, title=' ', output_name=clf_label[self.opt.select_clf] + '/' + self.opt.filename)
 
         f.close()
