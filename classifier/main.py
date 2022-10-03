@@ -16,7 +16,7 @@ if __name__ == "__main__":
         default="sgd",
     )
     parser.add_argument(
-        "--batch_size", type=int, help="Set images batch size", default=24
+        "--batch_size", type=int, help="Set images batch size", default=32
     )
     parser.add_argument(
         "--weight_decay", type=float, help="Set L2 parameter norm penalty", default=5e-4
