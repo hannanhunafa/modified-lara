@@ -84,7 +84,7 @@ if __name__ == "__main__":
         
     # Symptom Dataset
     else:
-        parser.add_argument("--images_dir", type=str, default="dataset/tomato")
+        parser.add_argument("--images_dir", type=str, default="dataset/symptom")
         Clf = OneTaskClf(parser)
 
     if options.train:

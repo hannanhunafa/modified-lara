@@ -6,6 +6,28 @@ python main.py --test  --model alexnet --filename alexnet-multitask
 12,86 sec/epoch
 
 GoogleNet - Multitask
-python main.py --train --model googlenet --filename alexnet-multitask
+python main.py --train --model googlenet --filename googlenet-multitask
 
-python main.py --test  --model googlenet --filename alexnet-multitask
+python main.py --test  --model googlenet --filename googlenet-multitask
+15,16 sec/
+
+VGG16 multitask
+!python main.py --train --model vgg16 --filename vgg-multitask
+29,72 s/e
+
+Resnet50 Std multitask
+!python main.py --train --model resnet50 --filename resnet-multitask-stdaug
+
+!python main.py --test --model resnet50 --filename resnet-multitask-stdaug
+22,79 s/e
+
+MobileNetv2 multitask
+15,30 s/e
+
+Resnet50 mix multitask
+!python main.py --train --model resnet50 --filename resnet-multitask-mix --data_augmentation mixup
+
+25,33 s/e
+
+alexnet-single-sym
+!python main.py --train --model alexnet --filename alexnet-single-bio --select_clf 3
