@@ -30,4 +30,48 @@ Resnet50 mix multitask
 25,33 s/e
 
 alexnet-single-sym
-!python main.py --train --model alexnet --filename alexnet-single-bio --select_clf 3
+!python main.py --train --model alexnet --filename alexnet-single-sym --select_clf 3
+
+17,64 s/e
+
+googlenet-single-sym
+!python main.py --train --model googlenet --filename googlenet-single-sym --select_clf 3
+21,65 s/e
+
+vgg-single-sym
+!python main.py --train --model vgg16 --filename vgg-single-sym --select_clf 3
+50,17 s/e
+
+resnet-single-sym-std
+!python main.py --train --model resnet50 --filename resnet-single-sym-std --select_clf 
+40 s/e
+
+resnet-single-sym-mix
+!python main.py --train --model resnet50 --filename resnet-single-sym-mix --select_clf --data_augmentation mixup
+35,09 s/e
+
+mobilenet-single-sym
+!python main.py --train --model mobilenet_v2 --filename mobilenet-single-sym --select_clf 3
+22,2 s/e
+
+alexnet-single-dis
+python main.py --train --model alexnet --filename alexnet-single-dis --select_clf 1
+local : 11,61 s/e 16,50
+
+googlenet-single-dis
+python main.py --train --model googlenet --filename googlenet-single-dis --select_clf 1
+local : 20.6 s/e
+
+vgg-single-dis
+python main.py --train --model vgg16 --filename vgg-single-dis --select_clf 1
+
+resnet-single-dis
+!python main.py --test --model resnet50 --filename resnet-single-disease --select_clf 1
+
+resnet-single-dis-mix
+!python main.py --test --model resnet50 --filename resnet-single-disease-mix --select_clf 1 --data_augmentation mixup
+
+mobilenet-single-dis
+python main.py --train --model mobilenet_v2 --filename mobilenet-single-dis --select_clf 1
+
+alexnet-single-severity
