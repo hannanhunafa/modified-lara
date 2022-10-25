@@ -1,16 +1,13 @@
-import cv2
 import matplotlib.pyplot as plt
 
-im1 = cv2.imread('im (1).jpg')
-im2 = cv2.imread('im (2).jpg')
-im3 = cv2.imread('im (3).jpg')
-f, axarr = plt.subplots(3, figsize=(16, 11.5))
+x = [1,2,3,4,5]
+y = [1,2,3,4,5]
+y2 = [1,4,9,16,25]
 
-# Original image
-axarr[0].imshow(im1)
-axarr[1].imshow(im2)
-axarr[2].imshow(im3)
+fig = plt.figure()
+ax1 = fig.add_subplot(2,1,1)
+ax1.plot(x,y)
+ax2 = fig.add_subplot(2,1,2)
+ax2.plot(x,y2)
 
-plt.setp(plt.gcf().get_axes(), xticks=[], yticks=[])
-plt.subplots_adjust(wspace=0.05, hspace=0.05)
 plt.show()

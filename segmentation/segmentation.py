@@ -15,6 +15,10 @@ import math
 import matplotlib.pyplot as plt
 from sklearn.linear_model import LinearRegression
 
+"""
+Custom Libraries
+"""
+from tqdm import tqdm
 ## Declare models
 models = {
     'pspsqueezenet': lambda: PSPNet(sizes=(1, 2, 3, 6), psp_size=512, deep_features_size=256, backend='squeezenet'),
@@ -344,9 +348,12 @@ class SemanticSegmentation:
         
         test_metrics = { 'miou': [], 'acc': [] }
         severity = { 'true': np.array([]), 'pred': np.array([]) }
-
+        """
+        custom to show only first plot
+        """
+        show = True #custom
         with torch.no_grad():
-            for imgs, labels, cls in test_loader:
+            for imgs, labels, cls in tqdm(test_loader): #custom add tqdm
                 # Loading images on gpu
                 if torch.cuda.is_available():
                     imgs, labels, cls = imgs.cuda(), labels.cuda(), cls.cuda()
@@ -365,7 +372,9 @@ class SemanticSegmentation:
                 imgs = np.transpose(imgs, [0,2,3,1])
                 
                 f, axarr = plt.subplots(len(imgs), 3, figsize=(16, 11.5))
-                
+                axarr[0][0].title.set_text('Original Image')
+                axarr[0][1].title.set_text('True Segmentation')
+                axarr[0][2].title.set_text('Predicted Segmentation')
                 for j in range(len(imgs)):
                     # Original image
                     axarr[j][0].imshow(imgs[j])
@@ -373,6 +382,7 @@ class SemanticSegmentation:
                     axarr[j][1].imshow(test_dataset.decode_segmap(labels.cpu().numpy()[j]))
                     # Predicted labels
                     axarr[j][2].imshow(test_dataset.decode_segmap(labels_pred.cpu().numpy()[j]))
+                    
                 
                     # Compute severity
                     aux = labels.cpu().numpy()[j]
@@ -383,7 +393,7 @@ class SemanticSegmentation:
                 
                 plt.setp(plt.gcf().get_axes(), xticks=[], yticks=[])
                 plt.subplots_adjust(wspace=0.05, hspace=0.05)
-                plt.show()
+                # plt.show()
 
         miou = np.mean(test_metrics['miou'])
         acc = np.mean(test_metrics['acc'])
