@@ -18,7 +18,14 @@ from sklearn.linear_model import LinearRegression
 """
 Custom Libraries
 """
-from tqdm import tqdm
+import torchvision
+import torchvision.transforms as transforms
+from torchvision.datasets import ImageFolder
+from torch.utils.data import RandomSampler
+
+from torch.utils.data import DataLoader
+
+
 ## Declare models
 models = {
     'pspsqueezenet': lambda: PSPNet(sizes=(1, 2, 3, 6), psp_size=512, deep_features_size=256, backend='squeezenet'),
@@ -352,8 +359,11 @@ class SemanticSegmentation:
         custom to show only first plot
         """
         show = True #custom
+        batch_number = 1
         with torch.no_grad():
-            for imgs, labels, cls in tqdm(test_loader): #custom add tqdm
+            for imgs, labels, cls in test_loader: #custom add tqdm
+                print('Batch : ', batch_number)
+                batch_number += 1
                 # Loading images on gpu
                 if torch.cuda.is_available():
                     imgs, labels, cls = imgs.cuda(), labels.cuda(), cls.cuda()
@@ -375,7 +385,7 @@ class SemanticSegmentation:
                 axarr[0][0].title.set_text('Original Image')
                 axarr[0][1].title.set_text('True Segmentation')
                 axarr[0][2].title.set_text('Predicted Segmentation')
-                for j in range(len(imgs)):
+                for j in tqdm(range(len(imgs))):
                     # Original image
                     axarr[j][0].imshow(imgs[j])
                     # True labels
@@ -386,13 +396,17 @@ class SemanticSegmentation:
                 
                     # Compute severity
                     aux = labels.cpu().numpy()[j]
+                    sev = (aux==2).sum() / ((aux==1).sum() + (aux==2).sum())
+                    axarr[j][1].title.set_text('True : ' + str(sev))
                     severity['true'] = np.append(severity['true'], (aux==2).sum() / ((aux==1).sum() + (aux==2).sum()))
                     
                     aux = labels_pred.cpu().numpy()[j]
+                    sev = (aux==2).sum() / ((aux==1).sum() + (aux==2).sum())
+                    axarr[j][2].title.set_text('Predicted : ' + str(sev))
                     severity['pred'] = np.append(severity['pred'], (aux==2).sum() / ((aux==1).sum() + (aux==2).sum()))
-                
+
                 plt.setp(plt.gcf().get_axes(), xticks=[], yticks=[])
-                plt.subplots_adjust(wspace=0.05, hspace=0.05)
+                plt.subplots_adjust(wspace=0.05, hspace=0.5)
                 # plt.show()
 
         miou = np.mean(test_metrics['miou'])
@@ -405,6 +419,48 @@ class SemanticSegmentation:
         print('miou,acc\n%.2f,%.2f\n' % (miou*100, acc*100))
 
         scatterPlot(severity['true'], severity['pred'], self.opt.filename)
+    """
+    Custom method
+    """
+    
+    def run_prediction(self):
+        #load datasets
+        DIR_DATA = 'dataset/prediction-data'
+        transform = transforms.Compose([transforms.ToTensor()])
+        dataset = ImageFolder(root = DIR_DATA, transform = transform)
+        pred_loader = DataLoader(
+            dataset = dataset,
+            batch_size = 32,
+            num_workers = 2,
+        )
+
+        #load model
+        model = torch.load('net_weights/' + self.opt.filename + '.pth')
+        model.cuda()
+
+        model.eval()
+
+        severity = { 'true': np.array([]), 'pred': np.array([]) }
+
+        #predict
+        with torch.no_grad():
+            for imgs, labels in tqdm(pred_loader):
+                if torch.cuda.is_available():
+                    imgs, labels = imgs.cuda(), labels.cuda()
+
+                out, out_cls = model(imgs)
+                labels_pred = torch.max(out, 1)[1]
+
+                for j in range(len(imgs)):
+                    # Compute severity                    
+                    aux = labels_pred.cpu().numpy()[j]
+                    sever = (aux==2).sum() / ((aux==1).sum() + (aux==2).sum())
+                    print(sever)
+        
+
+
+
+
 
     def get_n_params(self):
         model = torch.load('net_weights/' + self.opt.filename + '.pth')

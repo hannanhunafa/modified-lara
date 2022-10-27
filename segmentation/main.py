@@ -46,7 +46,7 @@ if __name__ == "__main__":
         default="default",
     )
     parser.add_argument("--train", help="Run in training mode.", action="store_true")
-
+    parser.add_argument('--prediction', help = "", action="store_true")
     options = parser.parse_args()
 
 
@@ -54,5 +54,7 @@ if __name__ == "__main__":
 
     if options.train:
         Seg.run_training()
+    elif options.prediction:
+        Seg.run_prediction()
     else:
         Seg.run_test()
