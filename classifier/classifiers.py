@@ -739,15 +739,19 @@ class OneTaskClf:
             record['val_loss'].append(val_metrics['loss'])
             record['val_acc'].append(val_metrics['acc'])
 
-             # Record best model
-            curr_fs = val_metrics['fs']
-            if (curr_fs > best_fs) and epoch >= 5:
-                best_fs = curr_fs
+            #  # Record best model
+            # curr_fs = val_metrics['fs']
+            # if (curr_fs > best_fs) and epoch >= 5:
+            #     best_fs = curr_fs
 
-                # Saving model
-                torch.save(model, 'net_weights/' + clf_label[self.opt.select_clf] + '/' + self.opt.filename + '.pth')
-                print('model saved')
+            #     # Saving model
+            #     torch.save(model, 'net_weights/' + clf_label[self.opt.select_clf] + '/' + self.opt.filename + '.pth')
+            #     print('model saved')
 
+            #record every epoch
+            torch.save(model, 'net_weights/' + clf_label[self.opt.select_clf] + '/' + self.opt.filename + '.pth')
+            print('model saved')
+            
             # Saving log
             fp = open('log/' + clf_label[self.opt.select_clf] + '/' + self.opt.filename + '.pkl', 'wb')
 
