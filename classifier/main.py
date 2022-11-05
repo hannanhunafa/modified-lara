@@ -101,7 +101,7 @@ if __name__ == "__main__":
         Clf.run_training()
     
     if options.test:
-        if options.select_clf == 0:
+        if options.select_clf == 0 or options.select_clf == 6:
             y_true_dis, y_pred_dis, y_true_sev, y_pred_sev = Clf.run_test()
 
         else:

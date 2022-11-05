@@ -383,7 +383,10 @@ class MultiTaskClf:
         train_loader, val_loader, _ = data_loader(self.opt)
 
         # Model
-        model = cnn_model(self.opt.model, self.opt.pretrained, (5, 5))
+        if self.opt.select_clf == 0:
+            model = cnn_model(self.opt.model, self.opt.pretrained, (5, 5))
+        else :
+            model = cnn_model(self.opt.model, self.opt.pretrained, (4,3))
 
         # Criterion
         criterion_train = nn.CrossEntropyLoss() if self.opt.data_augmentation != 'bc+' else torch.nn.KLDivLoss(reduction='batchmean')
@@ -504,10 +507,14 @@ class MultiTaskClf:
         f = open('results/' + clf_label[self.opt.select_clf] + '/' + self.opt.filename + '.csv', 'a')
         f.write('acc,prec,rec,fs\n%.2f,%.2f,%.2f,%.2f\n' % (acc*100, pr*100, re*100, fs*100))
 
-        labels_dis = [ 'Healthy', 'Leaf miner', 'Rust', 'Phoma', 'Cercospora' ]
-
+        if self.opt.select_clf == 0:
+            labels_dis = [ 'Healthy', 'Leaf miner', 'Rust', 'Phoma', 'Cercospora' ]
+            cm = confusion_matrix(y_true_dis, y_pred_dis, labels = list(range(0,5)))
+        else:
+            labels_dis = ['Miner', 'Rust', 'Phoma', 'Healthy']
+            cm = confusion_matrix(y_true_dis, y_pred_dis, labels = list(range(0,4)))
         # Confusion matrix
-        cm = confusion_matrix(y_true_dis, y_pred_dis, labels = list(range(0,5)))
+        
         plot_confusion_matrix(cm=cm, target_names=labels_dis, title=' ', output_name= clf_label[self.opt.select_clf] + '/' + self.opt.filename + '_dis')
 
         # Severity
@@ -518,10 +525,14 @@ class MultiTaskClf:
 
         f.write('%.2f,%.2f,%.2f,%.2f\n' % (acc*100, pr*100, re*100, fs*100))
 
-        labels_sev = [ 'Healthy', 'Very low', 'Low', 'High', 'Very high' ]
+        if self.opt.select_clf == 0:
+            labels_sev = [ 'Healthy', 'Very low', 'Low', 'High', 'Very high' ]
+            cm = confusion_matrix(y_true_sev, y_pred_sev, labels = list(range(0,5)))
+        else:
+            labels_sev = ['0','1','2']
+            cm = confusion_matrix(y_true_sev, y_pred_sev, labels = list(range(0,3)))
 
         # Confusion matrix
-        cm = confusion_matrix(y_true_sev, y_pred_sev, labels = list(range(0,5)))
         plot_confusion_matrix(cm=cm, target_names=labels_sev, title=' ', output_name= clf_label[self.opt.select_clf] + '/' + self.opt.filename + '_sev')
 
         f.close()
