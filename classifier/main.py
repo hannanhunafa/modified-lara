@@ -47,12 +47,6 @@ if __name__ == "__main__":
     parser.add_argument("--balanced_dataset", type=bool, default=False)
 
     parser.add_argument(
-        "--csv_file",
-        type=str,
-        help="Path of the dataset csv file.",
-        default="dataset/dataset.csv",
-    )
-    parser.add_argument(
         "--fold",
         type=int,
         help="The data is changed based on the selected fold [1-5].",
@@ -79,8 +73,24 @@ if __name__ == "__main__":
 
     # Leaf Dataset
     if options.select_clf < 3:
+        parser.add_argument(
+            "--csv_file",
+            type=str,
+            help="Path of the dataset csv file.",
+            default="dataset/dataset.csv",
+        )
         parser.add_argument("--images_dir", type=str, default="dataset/leaf")
         Clf = MultiTaskClf(parser) if options.select_clf == 0 else OneTaskClf(parser)
+    
+    elif options.select_clf > 3 :
+        parser.add_argument(
+            "--csv_file",
+            type=str,
+            help="Path of the dataset csv file.",
+            default="dataset/custom_data.csv",
+        )
+        parser.add_argument("--images_dir", type=str, default="dataset/coffee-leaf-diseases")
+        Clf = MultiTaskClf(parser) if options.select_clf == 6 else OneTaskClf(parser)
         
     # Symptom Dataset
     else:

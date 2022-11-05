@@ -30,7 +30,8 @@ import math
 #custom
 import time
 
-clf_label = [ 'leaf_multitask' , 'leaf_disease', 'leaf_severity', 'symptom' ]
+# clf_label = [ 'leaf_multitask' , 'leaf_disease', 'leaf_severity', 'symptom' ]
+clf_label = [ 'leaf_multitask' , 'leaf_disease', 'leaf_severity', 'symptom' , 'custom_data','custom_data_2', 'custom_multitask']
 
 def cnn_model(model_name, pretrained=False, num_classes=(5, 5)):
     if model_name == 'shallow':
@@ -64,7 +65,7 @@ def cnn_model(model_name, pretrained=False, num_classes=(5, 5)):
 
 def sampler(dataset, opt):
     # Multiclass umbalanced dataset
-    if opt.select_clf == 0:
+    if opt.select_clf == 0 or opt.select_clf == 6:
         balance_factor = 20
 
         data = np.array(dataset.data)
@@ -81,7 +82,7 @@ def sampler(dataset, opt):
                 idx = np.where([a and b for a, b in zip(dis==d, sev==s)])
                 samplesWeight[idx] = 1 / ((targets_sum + balance_factor) / total)
 
-    elif opt.select_clf < 3:
+    elif opt.select_clf < 3 or opt.select_clf > 3:
 
         data = np.array(dataset.data)
         labels = data[:,1] if opt.select_clf == 1 else data[:,-1]
@@ -162,13 +163,21 @@ def data_loader(opt):
             ])
 
     # Dataset
-    if opt.select_clf < 3:
+    if opt.select_clf < 3 or opt.select_clf > 3:
+        if opt.select_clf < 3:
+            var_select = opt.select_clf
+        elif opt.select_clf == 4:
+            var_select = 1
+        elif opt.select_clf == 5:
+            var_select = 2
+        elif opt.select_clf == 6:
+            var_select = 0
         train_dataset = CoffeeLeavesDataset(
                 csv_file=opt.csv_file,
                 images_dir=opt.images_dir,
                 dataset='train',
                 fold=opt.fold,
-                select_dataset=opt.select_clf,
+                select_dataset=var_select,
                 transforms=train_transforms
         )
 
@@ -177,7 +186,7 @@ def data_loader(opt):
                 images_dir=opt.images_dir,
                 dataset='val',
                 fold=opt.fold,
-                select_dataset=opt.select_clf,
+                select_dataset=var_select,
                 transforms=val_transforms
         )
 
@@ -186,7 +195,7 @@ def data_loader(opt):
                 images_dir=opt.images_dir,
                 dataset='test',
                 fold=opt.fold,
-                select_dataset=opt.select_clf,
+                select_dataset=var_select,
                 transforms=val_transforms
                 )
 
@@ -674,7 +683,12 @@ class OneTaskClf:
         train_loader, val_loader, _ = data_loader(self.opt)
 
         #Model
-        model = cnn_model(self.opt.model, self.opt.pretrained, 5)
+        if self.opt.select_clf == 4:
+            model = cnn_model(self.opt.model, self.opt.pretrained, 4)
+        elif self.opt.select_clf == 5:
+            model = cnn_model(self.opt.model, self.opt.pretrained, 3)
+        else:
+            model = cnn_model(self.opt.model, self.opt.pretrained, 5)
         
         
 
@@ -781,14 +795,26 @@ class OneTaskClf:
         f = open('results/' + clf_label[self.opt.select_clf] + '/' + self.opt.filename + '.csv', 'a')
         f.write('acc,prec,rec,fs\n%.2f,%.2f,%.2f,%.2f\n' % (acc*100, pr*100, re*100, fs*100))
 
-        if self.opt.select_clf != 2:
+        if self.opt.select_clf == 1:
             labels = [ 'Healhty', 'Leaf miner', 'Rust', 'Phoma', 'Cercospora' ]
-        else:
+            # Confusion matrix
+            cm = confusion_matrix(y_true, y_pred, labels = list(range(0,5)))
+            plot_confusion_matrix(cm=cm, target_names=labels, title=' ', output_name=clf_label[self.opt.select_clf] + '/' + self.opt.filename)
+        elif self.opt.select_clf == 2:
             labels = [ 'Healthy', 'Very low', 'Low', 'High', 'Very high' ]
-
-        # Confusion matrix
-        cm = confusion_matrix(y_true, y_pred, labels = list(range(0,5)))
-        plot_confusion_matrix(cm=cm, target_names=labels, title=' ', output_name=clf_label[self.opt.select_clf] + '/' + self.opt.filename)
+            # Confusion matrix
+            cm = confusion_matrix(y_true, y_pred, labels = list(range(0,5)))
+            plot_confusion_matrix(cm=cm, target_names=labels, title=' ', output_name=clf_label[self.opt.select_clf] + '/' + self.opt.filename)
+        elif self.opt.select_clf == 4:
+            labels = ['Miner', 'Rust', 'Phoma', 'Healthy']
+            # Confusion matrix
+            cm = confusion_matrix(y_true, y_pred, labels = list(range(0,4)))
+            plot_confusion_matrix(cm=cm, target_names=labels, title=' ', output_name=clf_label[self.opt.select_clf] + '/' + self.opt.filename)
+        elif self.opt.select_clf == 5:
+            labels = ['0','1','2']
+            # Confusion matrix
+            cm = confusion_matrix(y_true, y_pred, labels = list(range(0,3)))
+            plot_confusion_matrix(cm=cm, target_names=labels, title=' ', output_name=clf_label[self.opt.select_clf] + '/' + self.opt.filename)
 
         f.close()
 
