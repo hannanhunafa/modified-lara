@@ -29,6 +29,7 @@ import math
 
 #custom
 import time
+import matplotlib.pyplot as plt
 
 # clf_label = [ 'leaf_multitask' , 'leaf_disease', 'leaf_severity', 'symptom' ]
 clf_label = [ 'leaf_multitask' , 'leaf_disease', 'leaf_severity', 'symptom' , 'custom_data','custom_data_2', 'custom_multitask']
@@ -770,7 +771,31 @@ class OneTaskClf:
             fp.close()
         #custom
         print("Total time: ", time.time() - start_time, "seconds")
+
+
+        #plot training evolution
+        epoche = list(range(1,self.opt.epochs+1))
+        fig = plt.figure(figsize = (12,4))
+        plt.subplot(1,2,1)
+        plt.xlabel('Epoch')
+        plt.ylabel('Accuracy')
+        plt.title('Accuracy Evolution')
+        plt.plot(epoche, record['train_acc'])
+        plt.plot(epoche, record['val_acc'])
+        plt.legend(["Training", "Validation"], loc ="lower right")
+
+        plt.subplot(1,2,2)
+        plt.xlabel('Epoch')
+        plt.ylabel('Loss')
+        plt.title('Loss Evolution')
+        plt.plot(epoche, record['train_loss'])
+        plt.plot(epoche, record['val_loss'])
+        plt.legend(["Training", "Validation"], loc ="upper left")
+        fig.savefig('results/' + clf_label[self.opt.select_clf] + '/' + self.opt.filename + '-evolution.png', dpi=200)
+
+
         #endcustom
+
 
         # Plot
         # static_graph(np.array(record['train_acc'])/100, np.array(record['val_acc'])/100)
