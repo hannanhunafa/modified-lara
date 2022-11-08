@@ -30,6 +30,7 @@ import math
 #custom
 import time
 import matplotlib.pyplot as plt
+from tqdm import tqdm
 
 # clf_label = [ 'leaf_multitask' , 'leaf_disease', 'leaf_severity', 'symptom' ]
 clf_label = [ 'leaf_multitask' , 'leaf_disease', 'leaf_severity', 'symptom' , 'custom_data','custom_data_2', 'custom_multitask']
@@ -247,7 +248,7 @@ class MultiTaskClf:
 
         train_metrics = { 'loss':0.0, 'dis_acc':0.0, 'sev_acc':0.0 }
 
-        for images, labels_dis, labels_sev in train_loader:
+        for images, labels_dis, labels_sev in tqdm(train_loader):
 
             # Loading images on gpu
             if torch.cuda.is_available():
@@ -328,7 +329,7 @@ class MultiTaskClf:
         val_metrics = { 'loss':0.0, 'dis_acc':0.0, 'sev_acc':0.0, 'mean_fs':0.0 }
 
         with torch.no_grad():
-            for images, labels_dis, labels_sev in val_loader:
+            for images, labels_dis, labels_sev in tqdm(val_loader):
                 # Loading images on gpu
                 if torch.cuda.is_available():
 	                images, labels_dis, labels_sev = images.cuda(), labels_dis.cuda(), labels_sev.cuda()
@@ -373,7 +374,7 @@ class MultiTaskClf:
         epoch = kwargs.get('epoch')
         epochs = kwargs.get('epochs')
 
-        print('[Epoch:%3d/%3d][%s][LOSS: %4.2f][Dis ACC: %5.2f][Sev ACC: %5.2f]' %
+        print('[Epoch:%3d/%3d][%s][LOSS: %4.2f][1st Task ACC: %5.2f][2nd Task ACC: %5.2f]' %
                 (epoch+1, epochs, data_type, metrics['loss'], metrics['dis_acc'], metrics['sev_acc']))
         
     
@@ -417,6 +418,7 @@ class MultiTaskClf:
         best_fs = 0.0
         #custom
         time_start = time.time()
+        best_epoch = 0
         #end_custo
         for epoch in range(self.opt.epochs):
 
@@ -448,6 +450,7 @@ class MultiTaskClf:
                 # Saving model
                 torch.save(model, 'net_weights/' + clf_label[self.opt.select_clf] + '/' + self.opt.filename + '.pth')
                 print('model saved')
+                best_epoch = epoch
 
             # Saving log
             fp = open('log/' + clf_label[self.opt.select_clf] + '/' + self.opt.filename + '.pkl', 'wb')
@@ -455,6 +458,47 @@ class MultiTaskClf:
             fp.close()
         #custom
         print("Total time: ", time.time() - time_start, "seconds")
+
+        print('\nTrain Summary')
+        print("Total time: ", time.time() - time_start, "seconds")
+        print("Time per Epoch: ", (time.time() - time_start)/self.opt.epochs, " seconds" )
+        print("Epoch with best FS : ", best_epoch+1)
+        print("Train 1st task Accuracy          : %.2f" % record['train_dis_acc'][best_epoch])
+        print("Validation 1st task Accuracy     : %.2f" % record['val_dis_acc'][best_epoch])
+        print("Train 2nd task Accuracy          : %.2f" % record['train_sev_acc'][best_epoch])
+        print("Validation 2nd task Accuracy     : %.2f" % record['val_sev_acc'][best_epoch])
+        print("Train Loss                       : %.2f" % record['train_loss'][best_epoch])
+        print("Validation Loss                  : %.2f" % record['val_loss'][best_epoch])
+
+        #plot training evolution
+        epoche = list(range(1,self.opt.epochs+1))
+        fig = plt.figure(figsize = (16,4))
+        plt.subplot(1,3,1)
+        plt.xlabel('Epoch')
+        plt.ylabel('Accuracy')
+        plt.title('1st task Accuracy Evolution')
+        plt.plot(epoche, record['train_dis_acc'])
+        plt.plot(epoche, record['val_dis_acc'])
+        plt.legend(["Training", "Validation"], loc ="lower right")
+
+        plt.subplot(1,3,2)
+        plt.xlabel('Epoch')
+        plt.ylabel('Accuracy')
+        plt.title('2nd task Accuracy Evolution')
+        plt.plot(epoche, record['train_sev_acc'])
+        plt.plot(epoche, record['val_sev_acc'])
+        plt.legend(["Training", "Validation"], loc ="lower right")
+
+        plt.subplot(1,3,3)
+        plt.xlabel('Epoch')
+        plt.ylabel('Loss')
+        plt.title('Loss Evolution')
+        plt.plot(epoche, record['train_loss'])
+        plt.plot(epoche, record['val_loss'])
+        plt.legend(["Training", "Validation"], loc ="upper left")
+        fig.savefig('results/' + clf_label[self.opt.select_clf] + '/' + self.opt.filename + '-evolution.png', dpi=200)
+
+
         #end_custom
 
         # Plot
@@ -477,7 +521,7 @@ class MultiTaskClf:
         y_true_sev = np.empty(0)
 
         with torch.no_grad():
-	        for i, (images, labels_dis, labels_sev) in enumerate(test_loader):
+	        for i, (images, labels_dis, labels_sev) in tqdm(enumerate(test_loader)):
 	            # Loading images on gpu
 	            if torch.cuda.is_available():
 	                images, labels_dis, labels_sev = images.cuda(), labels_dis.cuda(), labels_sev.cuda()
@@ -773,9 +817,12 @@ class OneTaskClf:
         print('\nTrain Summary')
         print("Total time: ", time.time() - start_time, "seconds")
         print("Time per Epoch: ", (time.time() - start_time)/self.opt.epochs, " seconds" )
-        print("Epoch with best FS : ", best_epoch+1)
-        print("")
-
+        print("Epoch with best FS  : %d" % best_epoch+1)
+        print("Train Accuracy      : %.2f" % record['train_acc'][best_epoch])
+        print("Validation Accuracy : %.2f" % record['val_acc'][best_epoch])
+        print("Train Loss          : %.2f" % record['train_loss'][best_epoch])
+        print("Validation Loss     : %.2f" % record['val_loss'][best_epoch])
+        print("FScore              : %.2f" % best_fs)
 
         #plot training evolution
         epoche = list(range(1,self.opt.epochs+1))
@@ -817,7 +864,7 @@ class OneTaskClf:
         y_true = np.empty(0)
 
         with torch.no_grad():
-	        for i, (images, labels) in enumerate(test_loader):
+	        for i, (images, labels) in tqdm(enumerate(test_loader)):
 	            # Loading images on gpu
 	            if torch.cuda.is_available():
 	                images, labels = images.cuda(), labels.cuda()
