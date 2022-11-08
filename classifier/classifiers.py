@@ -730,6 +730,7 @@ class OneTaskClf:
         best_fs = 0.0
         #custom
         start_time = time.time()
+        best_epoch = 0
         #end custom
         for epoch in range(self.opt.epochs):
 
@@ -751,7 +752,7 @@ class OneTaskClf:
             record['val_loss'].append(val_metrics['loss'])
             record['val_acc'].append(val_metrics['acc'])
 
-             # Record best model
+            # Record best model
             curr_fs = val_metrics['fs']
             if (curr_fs > best_fs) and epoch > 1:
                 best_fs = curr_fs
@@ -759,8 +760,9 @@ class OneTaskClf:
                 # Saving model
                 torch.save(model, 'net_weights/' + clf_label[self.opt.select_clf] + '/' + self.opt.filename + '.pth')
                 print('model saved')
+                best_epoch = epoch
 
-            #record every epoch
+            
             
             # Saving log
             fp = open('log/' + clf_label[self.opt.select_clf] + '/' + self.opt.filename + '.pkl', 'wb')
@@ -768,7 +770,11 @@ class OneTaskClf:
             pickle.dump(record, fp)
             fp.close()
         #custom
+        print('\nTrain Summary')
         print("Total time: ", time.time() - start_time, "seconds")
+        print("Time per Epoch: ", (time.time() - start_time)/self.opt.epochs, " seconds" )
+        print("Epoch with best FS : ", best_epoch+1)
+        print("")
 
 
         #plot training evolution
