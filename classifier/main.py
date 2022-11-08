@@ -89,7 +89,7 @@ if __name__ == "__main__":
             help="Path of the dataset csv file.",
             default="dataset/custom_data.csv",
         )
-        parser.add_argument("--images_dir", type=str, default="dataset/coffee-leaf-diseases")
+        parser.add_argument("--images_dir", type=str, default="dataset/custom_data")
         Clf = MultiTaskClf(parser) if options.select_clf == 6 else OneTaskClf(parser)
         
     # Symptom Dataset
