@@ -457,18 +457,29 @@ class MultiTaskClf:
             pickle.dump(record, fp)
             fp.close()
         #custom
-        print("Total time: ", time.time() - time_start, "seconds")
+        total_time = time.time()-time_start
 
         print('\nTrain Summary')
-        print("Total time: ", time.time() - time_start, "seconds")
-        print("Time per Epoch: ", (time.time() - time_start)/self.opt.epochs, " seconds" )
-        print("Epoch with best FS : ", best_epoch+1)
+        print("Total time    : %.3f seconds" % total_time)
+        print("Best Epoch    : %d" % (best_epoch+1))
         print("Train 1st task Accuracy          : %.2f" % record['train_dis_acc'][best_epoch])
         print("Validation 1st task Accuracy     : %.2f" % record['val_dis_acc'][best_epoch])
         print("Train 2nd task Accuracy          : %.2f" % record['train_sev_acc'][best_epoch])
         print("Validation 2nd task Accuracy     : %.2f" % record['val_sev_acc'][best_epoch])
         print("Train Loss                       : %.2f" % record['train_loss'][best_epoch])
         print("Validation Loss                  : %.2f" % record['val_loss'][best_epoch])
+
+        fp = open('results/' + clf_label[self.opt.select_clf] + '/' + self.opt.filename + '-training.txt', 'a')
+        fp.write('Train Summary\n')
+        fp.write("Total time    : %.3f seconds\n" % total_time)
+        fp.write("Best Epoch    : %d \n" % (best_epoch+1))
+        fp.write("Train 1st task Accuracy          : %.2f \n" % record['train_dis_acc'][best_epoch])
+        fp.write("Validation 1st task Accuracy     : %.2f \n" % record['val_dis_acc'][best_epoch])
+        fp.write("Train 2nd task Accuracy          : %.2f \n" % record['train_sev_acc'][best_epoch])
+        fp.write("Validation 2nd task Accuracy     : %.2f \n" % record['val_sev_acc'][best_epoch])
+        fp.write("Train Loss                       : %.2f \n" % record['train_loss'][best_epoch])
+        fp.write("Validation Loss                  : %.2f \n" % record['val_loss'][best_epoch])
+        fp.close()
 
         #plot training evolution
         epoche = list(range(1,self.opt.epochs+1))
@@ -814,15 +825,25 @@ class OneTaskClf:
             pickle.dump(record, fp)
             fp.close()
         #custom
+        total_time = time.time()-start_time
+
         print('\nTrain Summary')
-        print("Total time: ", time.time() - start_time, "seconds")
-        print("Time per Epoch: ", (time.time() - start_time)/self.opt.epochs, " seconds" )
-        print("Epoch with best FS  : %d" % best_epoch+1)
-        print("Train Accuracy      : %.2f" % record['train_acc'][best_epoch])
-        print("Validation Accuracy : %.2f" % record['val_acc'][best_epoch])
-        print("Train Loss          : %.2f" % record['train_loss'][best_epoch])
-        print("Validation Loss     : %.2f" % record['val_loss'][best_epoch])
-        print("FScore              : %.2f" % best_fs)
+        print("Total time              : %.3f seconds" % total_time)
+        print("Best Epoch              : %d" % (best_epoch+1))
+        print("Train Accuracy          : %.2f" % record['train_acc'][best_epoch])
+        print("Validation Accuracy     : %.2f" % record['val_acc'][best_epoch])
+        print("Train Loss              : %.2f" % record['train_loss'][best_epoch])
+        print("Validation Loss         : %.2f" % record['val_loss'][best_epoch])
+
+        fp = open('results/' + clf_label[self.opt.select_clf] + '/' + self.opt.filename + '-training.txt', 'a')
+        fp.write('Train Summary\n')
+        fp.write("Total time              : %.3f seconds\n" % total_time)
+        fp.write("Best Epoch              : %d \n" % (best_epoch+1))
+        fp.write("Train Accuracy          : %.2f \n" % record['train_acc'][best_epoch])
+        fp.write("Validation Accuracy     : %.2f \n" % record['val_acc'][best_epoch])
+        fp.write("Train Loss              : %.2f \n" % record['train_loss'][best_epoch])
+        fp.write("Validation Loss         : %.2f \n" % record['val_loss'][best_epoch])
+        fp.close()
 
         #plot training evolution
         epoche = list(range(1,self.opt.epochs+1))
