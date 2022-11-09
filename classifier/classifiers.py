@@ -168,19 +168,24 @@ def data_loader(opt):
     if opt.select_clf < 3 or opt.select_clf > 3:
         if opt.select_clf < 3:
             var_select = opt.select_clf
+            extension = '.jpg'
         elif opt.select_clf == 4:
             var_select = 1
+            extension = ''
         elif opt.select_clf == 5:
             var_select = 2
+            extension = ''
         elif opt.select_clf == 6:
             var_select = 0
+            extension = ''
         train_dataset = CoffeeLeavesDataset(
                 csv_file=opt.csv_file,
                 images_dir=opt.images_dir,
                 dataset='train',
                 fold=opt.fold,
                 select_dataset=var_select,
-                transforms=train_transforms
+                transforms=train_transforms,
+                extension=extension
         )
 
         val_dataset = CoffeeLeavesDataset(
@@ -189,7 +194,8 @@ def data_loader(opt):
                 dataset='val',
                 fold=opt.fold,
                 select_dataset=var_select,
-                transforms=val_transforms
+                transforms=val_transforms,
+                extension=extension
         )
 
         test_dataset = CoffeeLeavesDataset(
@@ -198,7 +204,8 @@ def data_loader(opt):
                 dataset='test',
                 fold=opt.fold,
                 select_dataset=var_select,
-                transforms=val_transforms
+                transforms=val_transforms,
+                extension=extension
                 )
 
     else:
@@ -388,7 +395,7 @@ class MultiTaskClf:
         if self.opt.select_clf == 0:
             model = cnn_model(self.opt.model, self.opt.pretrained, (5, 5))
         else :
-            model = cnn_model(self.opt.model, self.opt.pretrained, (4,3))
+            model = cnn_model(self.opt.model, self.opt.pretrained, (100,20))
 
         # Criterion
         criterion_train = nn.CrossEntropyLoss() if self.opt.data_augmentation != 'bc+' else torch.nn.KLDivLoss(reduction='batchmean')
@@ -567,8 +574,8 @@ class MultiTaskClf:
             labels_dis = [ 'Healthy', 'Leaf miner', 'Rust', 'Phoma', 'Cercospora' ]
             cm = confusion_matrix(y_true_dis, y_pred_dis, labels = list(range(0,5)))
         else:
-            labels_dis = ['Miner', 'Rust', 'Phoma', 'Healthy']
-            cm = confusion_matrix(y_true_dis, y_pred_dis, labels = list(range(0,4)))
+            labels_dis = list(range(0,100))
+            cm = confusion_matrix(y_true_dis, y_pred_dis, labels = list(range(0,100)))
         # Confusion matrix
         
         plot_confusion_matrix(cm=cm, target_names=labels_dis, title=' ', output_name= clf_label[self.opt.select_clf] + '/' + self.opt.filename + '_dis')
@@ -585,8 +592,8 @@ class MultiTaskClf:
             labels_sev = [ 'Healthy', 'Very low', 'Low', 'High', 'Very high' ]
             cm = confusion_matrix(y_true_sev, y_pred_sev, labels = list(range(0,5)))
         else:
-            labels_sev = ['0','1','2']
-            cm = confusion_matrix(y_true_sev, y_pred_sev, labels = list(range(0,3)))
+            labels_sev = list(range(0,20))
+            cm = confusion_matrix(y_true_sev, y_pred_sev, labels = list(range(0,20)))
 
         # Confusion matrix
         plot_confusion_matrix(cm=cm, target_names=labels_sev, title=' ', output_name= clf_label[self.opt.select_clf] + '/' + self.opt.filename + '_sev')
@@ -751,9 +758,9 @@ class OneTaskClf:
 
         #Model
         if self.opt.select_clf == 4:
-            model = cnn_model(self.opt.model, self.opt.pretrained, 4)
+            model = cnn_model(self.opt.model, self.opt.pretrained, 100)
         elif self.opt.select_clf == 5:
-            model = cnn_model(self.opt.model, self.opt.pretrained, 3)
+            model = cnn_model(self.opt.model, self.opt.pretrained, 20)
         else:
             model = cnn_model(self.opt.model, self.opt.pretrained, 5)
         
@@ -918,14 +925,14 @@ class OneTaskClf:
             cm = confusion_matrix(y_true, y_pred, labels = list(range(0,5)))
             plot_confusion_matrix(cm=cm, target_names=labels, title=' ', output_name=clf_label[self.opt.select_clf] + '/' + self.opt.filename)
         elif self.opt.select_clf == 4:
-            labels = ['Miner', 'Rust', 'Phoma', 'Healthy']
+            labels = list(range(0,100))
             # Confusion matrix
-            cm = confusion_matrix(y_true, y_pred, labels = list(range(0,4)))
+            cm = confusion_matrix(y_true, y_pred, labels = list(range(0,100)))
             plot_confusion_matrix(cm=cm, target_names=labels, title=' ', output_name=clf_label[self.opt.select_clf] + '/' + self.opt.filename)
         elif self.opt.select_clf == 5:
-            labels = ['0','1','2']
+            labels = list(range(0,20))
             # Confusion matrix
-            cm = confusion_matrix(y_true, y_pred, labels = list(range(0,3)))
+            cm = confusion_matrix(y_true, y_pred, labels = list(range(0,20)))
             plot_confusion_matrix(cm=cm, target_names=labels, title=' ', output_name=clf_label[self.opt.select_clf] + '/' + self.opt.filename)
 
         f.close()

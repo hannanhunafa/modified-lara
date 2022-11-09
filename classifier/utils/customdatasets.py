@@ -15,7 +15,7 @@ from torch.utils.data.dataset import Dataset
 class CoffeeLeavesDataset(Dataset):
     """Coffee Leaves Dataset."""
         
-    def __init__(self, csv_file, images_dir, dataset, fold=1, select_dataset=0, transforms=None):
+    def __init__(self, csv_file, images_dir, dataset, fold=1, select_dataset=0, transforms=None, extension = '.jpg'):
         """
         Args:
             csv_file (string): Path to the csv file with annotations.
@@ -29,6 +29,7 @@ class CoffeeLeavesDataset(Dataset):
         self.images_dir = images_dir
         self.select_dataset = select_dataset
         self.transformations = transforms
+        self.extension = extension
         
     def __len__(self):
         return len(self.data)
@@ -37,7 +38,7 @@ class CoffeeLeavesDataset(Dataset):
         
         # Get image name from the pandas df
         img_name = os.path.join(self.images_dir,
-                                str(self.data.iloc[idx, 0]) + '.jpg')
+                                str(self.data.iloc[idx, 0]) + self.extension)
         # Open image
         image = Image.open(img_name)        
         
