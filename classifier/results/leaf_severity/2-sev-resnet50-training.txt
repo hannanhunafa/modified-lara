@@ -1,0 +1,7 @@
+Train Summary
+Total time              : 706.225 seconds
+Best Epoch              : 26 
+Train Accuracy          : 98.39 
+Validation Accuracy     : 88.54 
+Train Loss              : 0.05 
+Validation Loss         : 0.30 
