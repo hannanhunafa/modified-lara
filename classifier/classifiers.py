@@ -149,19 +149,21 @@ def data_loader(opt):
 
     # Transforms
     train_transforms=transforms.Compose([
-            transforms.Resize((224, 224)),
-            transforms.RandomHorizontalFlip(0.5),
-            transforms.RandomVerticalFlip(0.5),
-            transforms.RandomApply([transforms.RandomRotation(10)], 0.25),
-            transforms.ColorJitter(brightness=0.25, contrast=0.25, saturation=0.25),
+            transforms.Resize((64, 64)),
+            # transforms.RandomHorizontalFlip(0.5),
+            # transforms.RandomVerticalFlip(0.5),
+            # transforms.RandomApply([transforms.RandomRotation(10)], 0.25),
+            # transforms.ColorJitter(brightness=0.25, contrast=0.25, saturation=0.25),
             transforms.ToTensor(),
-            transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+            # transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+            transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
             ])
 
     val_transforms=transforms.Compose([
-            transforms.Resize((224, 224)),
+            transforms.Resize((64, 64)),
             transforms.ToTensor(),
-            transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+            # transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+            transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
             ])
 
     # Dataset
@@ -576,8 +578,8 @@ class MultiTaskClf:
             labels_dis = [ 'Healthy', 'Leaf miner', 'Rust', 'Phoma', 'Cercospora' ]
             cm = confusion_matrix(y_true_dis, y_pred_dis, labels = list(range(0,5)))
         else:
-            labels_dis = list(range(0,50))
-            cm = confusion_matrix(y_true_dis, y_pred_dis, labels = list(range(0,50)))
+            labels_dis = list(range(0,self.n_class_1))
+            cm = confusion_matrix(y_true_dis, y_pred_dis, labels = list(range(0,self.n_class_1)))
         # Confusion matrix
         
         plot_confusion_matrix(cm=cm, target_names=labels_dis, title=' ', output_name= clf_label[self.opt.select_clf] + '/' + self.opt.filename + '_dis')
@@ -594,8 +596,8 @@ class MultiTaskClf:
             labels_sev = [ 'Healthy', 'Very low', 'Low', 'High', 'Very high' ]
             cm = confusion_matrix(y_true_sev, y_pred_sev, labels = list(range(0,5)))
         else:
-            labels_sev = list(range(0,8))
-            cm = confusion_matrix(y_true_sev, y_pred_sev, labels = list(range(0,8)))
+            labels_sev = list(range(0,self.n_class_2))
+            cm = confusion_matrix(y_true_sev, y_pred_sev, labels = list(range(0,self.n_class_2)))
 
         # Confusion matrix
         plot_confusion_matrix(cm=cm, target_names=labels_sev, title=' ', output_name= clf_label[self.opt.select_clf] + '/' + self.opt.filename + '_sev')
@@ -929,14 +931,14 @@ class OneTaskClf:
             cm = confusion_matrix(y_true, y_pred, labels = list(range(0,5)))
             plot_confusion_matrix(cm=cm, target_names=labels, title=' ', output_name=clf_label[self.opt.select_clf] + '/' + self.opt.filename)
         elif self.opt.select_clf == 4:
-            labels = list(range(0,50))
+            labels = list(range(0,self.n_class_1))
             # Confusion matrix
-            cm = confusion_matrix(y_true, y_pred, labels = list(range(0,50)))
+            cm = confusion_matrix(y_true, y_pred, labels = list(range(0,self.n_class_1)))
             plot_confusion_matrix(cm=cm, target_names=labels, title=' ', output_name=clf_label[self.opt.select_clf] + '/' + self.opt.filename)
         elif self.opt.select_clf == 5:
-            labels = list(range(0,8))
+            labels = list(range(0,self.n_class_2))
             # Confusion matrix
-            cm = confusion_matrix(y_true, y_pred, labels = list(range(0,8)))
+            cm = confusion_matrix(y_true, y_pred, labels = list(range(0,self.n_class_2)))
             plot_confusion_matrix(cm=cm, target_names=labels, title=' ', output_name=clf_label[self.opt.select_clf] + '/' + self.opt.filename)
 
         f.close()
