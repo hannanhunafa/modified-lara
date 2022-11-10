@@ -248,8 +248,8 @@ def data_loader(opt):
 class MultiTaskClf:
     def __init__(self, parser):
         self.opt = parser.parse_args()
-        self.n_class_1 = 18
-        self.n_class_2 = 3
+        self.n_class_1 = 100
+        self.n_class_2 = 20
         
     def train(self, train_loader, model, criterion, optimizer, data_augmentation=None):
         # tell to pytorch that we are training the model
@@ -619,8 +619,8 @@ class MultiTaskClf:
 class OneTaskClf:
     def __init__(self, parser):
         self.opt = parser.parse_args()
-        self.n_class_1 = 18
-        self.n_class_2 = 3
+        self.n_class_1 = 100
+        self.n_class_2 = 20
 
     def train(self, train_loader, model, criterion, optimizer, data_augmentation=None):
         # tell to pytorch that we are training the model
