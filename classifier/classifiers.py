@@ -248,6 +248,8 @@ def data_loader(opt):
 class MultiTaskClf:
     def __init__(self, parser):
         self.opt = parser.parse_args()
+        self.n_class_1 = 18
+        self.n_class_2 = 3
         
     def train(self, train_loader, model, criterion, optimizer, data_augmentation=None):
         # tell to pytorch that we are training the model
@@ -395,7 +397,7 @@ class MultiTaskClf:
         if self.opt.select_clf == 0:
             model = cnn_model(self.opt.model, self.opt.pretrained, (5, 5))
         else :
-            model = cnn_model(self.opt.model, self.opt.pretrained, (100,20))
+            model = cnn_model(self.opt.model, self.opt.pretrained, (self.n_class_1,self.n_class_2))
 
         # Criterion
         criterion_train = nn.CrossEntropyLoss() if self.opt.data_augmentation != 'bc+' else torch.nn.KLDivLoss(reduction='batchmean')
@@ -574,8 +576,8 @@ class MultiTaskClf:
             labels_dis = [ 'Healthy', 'Leaf miner', 'Rust', 'Phoma', 'Cercospora' ]
             cm = confusion_matrix(y_true_dis, y_pred_dis, labels = list(range(0,5)))
         else:
-            labels_dis = list(range(0,100))
-            cm = confusion_matrix(y_true_dis, y_pred_dis, labels = list(range(0,100)))
+            labels_dis = list(range(0,50))
+            cm = confusion_matrix(y_true_dis, y_pred_dis, labels = list(range(0,50)))
         # Confusion matrix
         
         plot_confusion_matrix(cm=cm, target_names=labels_dis, title=' ', output_name= clf_label[self.opt.select_clf] + '/' + self.opt.filename + '_dis')
@@ -592,8 +594,8 @@ class MultiTaskClf:
             labels_sev = [ 'Healthy', 'Very low', 'Low', 'High', 'Very high' ]
             cm = confusion_matrix(y_true_sev, y_pred_sev, labels = list(range(0,5)))
         else:
-            labels_sev = list(range(0,20))
-            cm = confusion_matrix(y_true_sev, y_pred_sev, labels = list(range(0,20)))
+            labels_sev = list(range(0,8))
+            cm = confusion_matrix(y_true_sev, y_pred_sev, labels = list(range(0,8)))
 
         # Confusion matrix
         plot_confusion_matrix(cm=cm, target_names=labels_sev, title=' ', output_name= clf_label[self.opt.select_clf] + '/' + self.opt.filename + '_sev')
@@ -617,6 +619,8 @@ class MultiTaskClf:
 class OneTaskClf:
     def __init__(self, parser):
         self.opt = parser.parse_args()
+        self.n_class_1 = 18
+        self.n_class_2 = 3
 
     def train(self, train_loader, model, criterion, optimizer, data_augmentation=None):
         # tell to pytorch that we are training the model
@@ -758,9 +762,9 @@ class OneTaskClf:
 
         #Model
         if self.opt.select_clf == 4:
-            model = cnn_model(self.opt.model, self.opt.pretrained, 100)
+            model = cnn_model(self.opt.model, self.opt.pretrained, self.n_class_1)
         elif self.opt.select_clf == 5:
-            model = cnn_model(self.opt.model, self.opt.pretrained, 20)
+            model = cnn_model(self.opt.model, self.opt.pretrained, self.n_class_2)
         else:
             model = cnn_model(self.opt.model, self.opt.pretrained, 5)
         
@@ -925,14 +929,14 @@ class OneTaskClf:
             cm = confusion_matrix(y_true, y_pred, labels = list(range(0,5)))
             plot_confusion_matrix(cm=cm, target_names=labels, title=' ', output_name=clf_label[self.opt.select_clf] + '/' + self.opt.filename)
         elif self.opt.select_clf == 4:
-            labels = list(range(0,100))
+            labels = list(range(0,50))
             # Confusion matrix
-            cm = confusion_matrix(y_true, y_pred, labels = list(range(0,100)))
+            cm = confusion_matrix(y_true, y_pred, labels = list(range(0,50)))
             plot_confusion_matrix(cm=cm, target_names=labels, title=' ', output_name=clf_label[self.opt.select_clf] + '/' + self.opt.filename)
         elif self.opt.select_clf == 5:
-            labels = list(range(0,20))
+            labels = list(range(0,8))
             # Confusion matrix
-            cm = confusion_matrix(y_true, y_pred, labels = list(range(0,20)))
+            cm = confusion_matrix(y_true, y_pred, labels = list(range(0,8)))
             plot_confusion_matrix(cm=cm, target_names=labels, title=' ', output_name=clf_label[self.opt.select_clf] + '/' + self.opt.filename)
 
         f.close()
