@@ -738,7 +738,7 @@ class OneTaskClf:
                 # Completed percentage
                 p = (100.0*(i+1))/len(val_loader)
 
-                sys.stdout.write("\r[%s][%.2f%%][ACC:%.2f][FS:%.2f]" % ('='*round(p/2) + '-'*(50 - round(p/2)), p, val_metrics['acc'], val_metrics['fs']))
+                sys.stdout.write("\r[%s][%.2f%%][ACC:%.2f]" % ('='*round(p/2) + '-'*(50 - round(p/2)), p, val_metrics['acc']))
                 sys.stdout.flush()
 
         print('')
