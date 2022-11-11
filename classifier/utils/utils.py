@@ -55,7 +55,7 @@ def plot_confusion_matrix(cm,
                           title='Confusion matrix',
                           output_name='confusion_matrix',
                           cmap=None,
-                          figsize=(10,8)):
+                          figsize=(20,16)):
     """
     given a sklearn confusion matrix (cm), make a nice plot
 
@@ -122,7 +122,7 @@ def plot_confusion_matrix(cm,
 
     plt.tight_layout()
     plt.ylabel('True label')
-    plt.xlabel('Predicted label\nacc={:0.4f}; error={:0.4f}; bac={:0.4f}'.format(accuracy, misclass, balanced_accuracy))
+    plt.xlabel('Predicted label\nacc={:0.4f}; error={:0.4f};'.format(accuracy, misclass))
     #plt.show()
     
     fig.savefig('results/' + output_name + '.png', bbox_inches='tight', dpi=200)

@@ -577,9 +577,15 @@ class MultiTaskClf:
         if self.opt.select_clf == 0:
             labels_dis = [ 'Healthy', 'Leaf miner', 'Rust', 'Phoma', 'Cercospora' ]
             cm = confusion_matrix(y_true_dis, y_pred_dis, labels = list(range(0,5)))
+            fp = open('results/' + clf_label[self.opt.select_clf] + '/' + self.opt.filename + '-dis-cm.pkl', 'wb')
+            pickle.dump(cm, fp)
+            fp.close()
         else:
             labels_dis = list(range(0,self.n_class_1))
             cm = confusion_matrix(y_true_dis, y_pred_dis, labels = list(range(0,self.n_class_1)))
+            fp = open('results/' + clf_label[self.opt.select_clf] + '/' + self.opt.filename + '-dis-cm.pkl', 'wb')
+            pickle.dump(cm, fp)
+            fp.close()
         # Confusion matrix
         
         plot_confusion_matrix(cm=cm, target_names=labels_dis, title=' ', output_name= clf_label[self.opt.select_clf] + '/' + self.opt.filename + '_dis')
@@ -595,9 +601,15 @@ class MultiTaskClf:
         if self.opt.select_clf == 0:
             labels_sev = [ 'Healthy', 'Very low', 'Low', 'High', 'Very high' ]
             cm = confusion_matrix(y_true_sev, y_pred_sev, labels = list(range(0,5)))
+            fp = open('results/' + clf_label[self.opt.select_clf] + '/' + self.opt.filename + '-sev-cm.pkl', 'wb')
+            pickle.dump(cm, fp)
+            fp.close()
         else:
             labels_sev = list(range(0,self.n_class_2))
             cm = confusion_matrix(y_true_sev, y_pred_sev, labels = list(range(0,self.n_class_2)))
+            fp = open('results/' + clf_label[self.opt.select_clf] + '/' + self.opt.filename + '-sev-cm.pkl', 'wb')
+            pickle.dump(cm, fp)
+            fp.close()
 
         # Confusion matrix
         plot_confusion_matrix(cm=cm, target_names=labels_sev, title=' ', output_name= clf_label[self.opt.select_clf] + '/' + self.opt.filename + '_sev')
@@ -925,20 +937,32 @@ class OneTaskClf:
             # Confusion matrix
             cm = confusion_matrix(y_true, y_pred, labels = list(range(0,5)))
             plot_confusion_matrix(cm=cm, target_names=labels, title=' ', output_name=clf_label[self.opt.select_clf] + '/' + self.opt.filename)
+            fp = open('results/' + clf_label[self.opt.select_clf] + '/' + self.opt.filename + '-cm.pkl', 'wb')
+            pickle.dump(cm, fp)
+            fp.close()
         elif self.opt.select_clf == 2:
             labels = [ 'Healthy', 'Very low', 'Low', 'High', 'Very high' ]
             # Confusion matrix
             cm = confusion_matrix(y_true, y_pred, labels = list(range(0,5)))
             plot_confusion_matrix(cm=cm, target_names=labels, title=' ', output_name=clf_label[self.opt.select_clf] + '/' + self.opt.filename)
+            fp = open('results/' + clf_label[self.opt.select_clf] + '/' + self.opt.filename + '-cm.pkl', 'wb')
+            pickle.dump(cm, fp)
+            fp.close()
         elif self.opt.select_clf == 4:
             labels = list(range(0,self.n_class_1))
             # Confusion matrix
             cm = confusion_matrix(y_true, y_pred, labels = list(range(0,self.n_class_1)))
+            fp = open('results/' + clf_label[self.opt.select_clf] + '/' + self.opt.filename + '-cm.pkl', 'wb')
+            pickle.dump(cm, fp)
+            fp.close()
             plot_confusion_matrix(cm=cm, target_names=labels, title=' ', output_name=clf_label[self.opt.select_clf] + '/' + self.opt.filename)
         elif self.opt.select_clf == 5:
             labels = list(range(0,self.n_class_2))
             # Confusion matrix
             cm = confusion_matrix(y_true, y_pred, labels = list(range(0,self.n_class_2)))
+            fp = open('results/' + clf_label[self.opt.select_clf] + '/' + self.opt.filename + '-cm.pkl', 'wb')
+            pickle.dump(cm, fp)
+            fp.close()
             plot_confusion_matrix(cm=cm, target_names=labels, title=' ', output_name=clf_label[self.opt.select_clf] + '/' + self.opt.filename)
 
         f.close()
