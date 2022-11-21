@@ -149,21 +149,21 @@ def data_loader(opt):
 
     # Transforms
     train_transforms=transforms.Compose([
-            transforms.Resize((64, 64)),
-            # transforms.RandomHorizontalFlip(0.5),
-            # transforms.RandomVerticalFlip(0.5),
-            # transforms.RandomApply([transforms.RandomRotation(10)], 0.25),
-            # transforms.ColorJitter(brightness=0.25, contrast=0.25, saturation=0.25),
+            transforms.Resize((224, 224)),
+            transforms.RandomHorizontalFlip(0.5),
+            transforms.RandomVerticalFlip(0.5),
+            transforms.RandomApply([transforms.RandomRotation(10)], 0.25),
+            transforms.ColorJitter(brightness=0.25, contrast=0.25, saturation=0.25),
             transforms.ToTensor(),
-            # transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
-            transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
+            transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+            # transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
             ])
 
     val_transforms=transforms.Compose([
-            transforms.Resize((64, 64)),
+            transforms.Resize((224, 224)),
             transforms.ToTensor(),
-            # transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
-            transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
+            transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+            # transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
             ])
 
     # Dataset
@@ -250,8 +250,8 @@ def data_loader(opt):
 class MultiTaskClf:
     def __init__(self, parser):
         self.opt = parser.parse_args()
-        self.n_class_1 = 100
-        self.n_class_2 = 20
+        self.n_class_1 = 5
+        self.n_class_2 = 5
         
     def train(self, train_loader, model, criterion, optimizer, data_augmentation=None):
         # tell to pytorch that we are training the model
@@ -541,30 +541,27 @@ class MultiTaskClf:
 
         y_pred_sev = np.empty(0)
         y_true_sev = np.empty(0)
-
         with torch.no_grad():
-	        for i, (images, labels_dis, labels_sev) in tqdm(enumerate(test_loader)):
-	            # Loading images on gpu
-	            if torch.cuda.is_available():
-	                images, labels_dis, labels_sev = images.cuda(), labels_dis.cuda(), labels_sev.cuda()
+            for i, (images, labels_dis, labels_sev) in tqdm(enumerate(test_loader)):
+                # Loading images on gpu
+                if torch.cuda.is_available():
+                    images, labels_dis, labels_sev = images.cuda(), labels_dis.cuda(), labels_sev.cuda()
+                    
+                    # pass images through the network
+                    outputs_dis, outputs_sev = model(images)
+                    
+                    #### Compute metrics
+                    # Biotic stress
+                    pred = torch.max(outputs_dis.data, 1)[1]
 
-	            # pass images through the network
-	            outputs_dis, outputs_sev = model(images)
+                    y_pred_dis = np.concatenate( (y_pred_dis, pred.data.cpu().numpy()) )
+                    y_true_dis = np.concatenate( (y_true_dis, labels_dis.data.cpu().numpy()) )
 
-	            #### Compute metrics
+                    # Severity
+                    pred = torch.max(outputs_sev.data, 1)[1]
 
-	            # Biotic stress
-	            pred = torch.max(outputs_dis.data, 1)[1]
-
-	            y_pred_dis = np.concatenate( (y_pred_dis, pred.data.cpu().numpy()) )
-	            y_true_dis = np.concatenate( (y_true_dis, labels_dis.data.cpu().numpy()) )
-
-	            # Severity
-	            pred = torch.max(outputs_sev.data, 1)[1]
-
-	            y_pred_sev = np.concatenate( (y_pred_sev, pred.data.cpu().numpy()) )
-	            y_true_sev = np.concatenate( (y_true_sev, labels_sev.data.cpu().numpy()) )
-
+                    y_pred_sev = np.concatenate( (y_pred_sev, pred.data.cpu().numpy()) )
+                    y_true_sev = np.concatenate( (y_true_sev, labels_sev.data.cpu().numpy()) )
         # Biotic stress
         acc = accuracy_score(y_true_dis, y_pred_dis)
         pr = precision_score(y_true_dis, y_pred_dis, average='macro')
@@ -618,6 +615,168 @@ class MultiTaskClf:
 
         return y_true_dis, y_pred_dis, y_true_sev, y_pred_sev
 
+
+    def run_ensemble(self):
+        # Dataset
+        _, _, test_loader = data_loader(self.opt)
+
+        # Loading model 1
+        model_1 = torch.load('net_weights/' + clf_label[self.opt.select_clf] + '/' + self.opt.filename + '.pth')
+        model_1.cuda()
+        # tell to pytorch that we are evaluating the model
+        model_1.eval()
+
+        y_pred_dis_1 = np.empty(0)
+        y_true_dis = np.empty(0)
+
+        y_pred_sev_1 = np.empty(0)
+        y_true_sev = np.empty(0)
+
+        with torch.no_grad():
+            for i, (images, labels_dis, labels_sev) in tqdm(enumerate(test_loader)):
+                # Loading images on gpu
+                if torch.cuda.is_available():
+                    images, labels_dis, labels_sev = images.cuda(), labels_dis.cuda(), labels_sev.cuda()
+
+                # pass images through the network
+                outputs_dis, outputs_sev = model_1(images)
+
+                #### Compute metrics
+
+                # Biotic stress
+                pred = torch.max(outputs_dis.data, 1)[1]
+
+                y_pred_dis_1 = np.concatenate( (y_pred_dis_1, pred.data.cpu().numpy()) )
+                y_true_dis = np.concatenate( (y_true_dis, labels_dis.data.cpu().numpy()) )
+
+                # Severity
+                pred = torch.max(outputs_sev.data, 1)[1]
+
+                y_pred_sev_1 = np.concatenate( (y_pred_sev_1, pred.data.cpu().numpy()) )
+                y_true_sev = np.concatenate( (y_true_sev, labels_sev.data.cpu().numpy()) )
+
+
+
+        # Loading model 2
+        model_2 = torch.load('net_weights/' + clf_label[self.opt.select_clf] + '/' + self.opt.filename2 + '.pth')
+        model_2.cuda()
+        # tell to pytorch that we are evaluating the model
+        model_2.eval()
+
+        y_pred_dis_2 = np.empty(0)
+        y_true_dis = np.empty(0)
+
+        y_pred_sev_2 = np.empty(0)
+        y_true_sev = np.empty(0)
+
+        with torch.no_grad():
+            for i, (images, labels_dis, labels_sev) in tqdm(enumerate(test_loader)):
+                # Loading images on gpu
+                if torch.cuda.is_available():
+                    images, labels_dis, labels_sev = images.cuda(), labels_dis.cuda(), labels_sev.cuda()
+
+                # pass images through the network
+                outputs_dis, outputs_sev = model_2(images)
+
+                #### Compute metrics
+
+                # Biotic stress
+                pred = torch.max(outputs_dis.data, 1)[1]
+
+                y_pred_dis_2 = np.concatenate( (y_pred_dis_2, pred.data.cpu().numpy()) )
+                y_true_dis = np.concatenate( (y_true_dis, labels_dis.data.cpu().numpy()) )
+
+                # Severity
+                pred = torch.max(outputs_sev.data, 1)[1]
+
+                y_pred_sev_2 = np.concatenate( (y_pred_sev_2, pred.data.cpu().numpy()) )
+                y_true_sev = np.concatenate( (y_true_sev, labels_sev.data.cpu().numpy()) )
+
+
+        # Loading model 2
+        model_3 = torch.load('net_weights/' + clf_label[self.opt.select_clf] + '/' + self.opt.filename3 + '.pth')
+        model_3.cuda()
+        # tell to pytorch that we are evaluating the model
+        model_3.eval()
+
+        y_pred_dis_3 = np.empty(0)
+        y_true_dis = np.empty(0)
+
+        y_pred_sev_3 = np.empty(0)
+        y_true_sev = np.empty(0)
+
+        with torch.no_grad():
+            for i, (images, labels_dis, labels_sev) in tqdm(enumerate(test_loader)):
+                # Loading images on gpu
+                if torch.cuda.is_available():
+                    images, labels_dis, labels_sev = images.cuda(), labels_dis.cuda(), labels_sev.cuda()
+
+                # pass images through the network
+                outputs_dis, outputs_sev = model_3(images)
+
+                #### Compute metrics
+
+                # Biotic stress
+                pred = torch.max(outputs_dis.data, 1)[1]
+
+                y_pred_dis_3 = np.concatenate( (y_pred_dis_3, pred.data.cpu().numpy()) )
+                y_true_dis = np.concatenate( (y_true_dis, labels_dis.data.cpu().numpy()) )
+
+                # Severity
+                pred = torch.max(outputs_sev.data, 1)[1]
+
+                y_pred_sev_3 = np.concatenate( (y_pred_sev_3, pred.data.cpu().numpy()) )
+                y_true_sev = np.concatenate( (y_true_sev, labels_sev.data.cpu().numpy()) )
+
+        
+        #Ensembling
+        y_pred_dis = []
+        for i in range (len(y_pred_dis_1)):
+            a = np.concatenate(([y_pred_dis_1[i]],[y_pred_dis_2[i]],[y_pred_dis_3[i]]), axis = 0).tolist()
+            b = max(a,key=a.count)
+            y_pred_dis.append(b)
+
+        y_pred_sev = []
+        for i in range (len(y_pred_sev_1)):
+            a = np.concatenate(([y_pred_sev_1[i]],[y_pred_sev_2[i]],[y_pred_sev_3[i]]), axis = 0).tolist()
+            a = max(a,key=a.count)
+            y_pred_sev.append(a)
+        
+        # Biotic stress
+        acc = accuracy_score(y_true_dis, y_pred_dis)
+        pr = precision_score(y_true_dis, y_pred_dis, average='macro')
+        re = recall_score(y_true_dis, y_pred_dis, average='macro')
+        fs = f1_score(y_true_dis, y_pred_dis, average='macro')
+
+        f = open('results/' + clf_label[self.opt.select_clf] + '/' + '--ensemble.csv', 'a')
+        f.write('acc,prec,rec,fs\n%.2f,%.2f,%.2f,%.2f\n' % (acc*100, pr*100, re*100, fs*100))
+        
+        labels_dis = [ 'Healthy', 'Leaf miner', 'Rust', 'Phoma', 'Cercospora' ]
+        cm = confusion_matrix(y_true_dis, y_pred_dis, labels = list(range(0,5)))
+        fp = open('results/' + clf_label[self.opt.select_clf] + '/' + 'ensemble' + '-dis-cm.pkl', 'wb')
+        pickle.dump(cm, fp)
+        fp.close()
+
+        plot_confusion_matrix(cm=cm, target_names=labels_dis, title=' ', output_name= clf_label[self.opt.select_clf] + '/' + 'ensemble_dis')
+
+        # Severity
+        acc = accuracy_score(y_true_sev, y_pred_sev)
+        pr = precision_score(y_true_sev, y_pred_sev, average='macro')
+        re = recall_score(y_true_sev, y_pred_sev, average='macro')
+        fs = f1_score(y_true_sev, y_pred_sev, average='macro')
+
+        f.write('%.2f,%.2f,%.2f,%.2f\n' % (acc*100, pr*100, re*100, fs*100))
+
+        labels_sev = [ 'Healthy', 'Very low', 'Low', 'High', 'Very high' ]
+        cm = confusion_matrix(y_true_sev, y_pred_sev, labels = list(range(0,5)))
+        fp = open('results/' + clf_label[self.opt.select_clf] + '/' + 'ensemble' + '-sev-cm.pkl', 'wb')
+        pickle.dump(cm, fp)
+        fp.close()
+
+        plot_confusion_matrix(cm=cm, target_names=labels_dis, title=' ', output_name= clf_label[self.opt.select_clf] + '/' + 'ensemble_sev')
+
+        return y_true_dis, y_pred_dis, y_true_sev, y_pred_sev
+    
     def get_n_params(self):
         model = torch.load('net_weights/' + clf_label[self.opt.select_clf] +'/' + self.opt.filename + '.pth')
         pp=0

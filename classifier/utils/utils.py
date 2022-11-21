@@ -55,9 +55,7 @@ def plot_confusion_matrix(cm,
                           title='Confusion matrix',
                           output_name='confusion_matrix',
                           cmap=None,
-                          figsize=(20,16)):
-    if len(target_names)>20:
-        figsize = (50,40) 
+                          figsize=(5,4)):
     """
     given a sklearn confusion matrix (cm), make a nice plot
 
