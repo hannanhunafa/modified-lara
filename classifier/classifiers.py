@@ -31,6 +31,7 @@ import math
 import time
 import matplotlib.pyplot as plt
 from tqdm import tqdm
+from statistics import mean
 
 # clf_label = [ 'leaf_multitask' , 'leaf_disease', 'leaf_severity', 'symptom' ]
 clf_label = [ 'leaf_multitask' , 'leaf_disease', 'leaf_severity', 'symptom' , 'custom_data','custom_data_2', 'custom_multitask']
@@ -617,165 +618,264 @@ class MultiTaskClf:
 
 
     def run_ensemble(self):
-        # Dataset
-        _, _, test_loader = data_loader(self.opt)
+        if self.opt.voting == 'Hard':
+            # Dataset
+            _, _, test_loader = data_loader(self.opt)
 
-        # Loading model 1
-        model_1 = torch.load('net_weights/' + clf_label[self.opt.select_clf] + '/' + self.opt.filename + '.pth')
-        model_1.cuda()
-        # tell to pytorch that we are evaluating the model
-        model_1.eval()
+            # Loading model 1
+            model_1 = torch.load('net_weights/' + clf_label[self.opt.select_clf] + '/' + self.opt.filename + '.pth')
+            model_1.cuda()
+            # tell to pytorch that we are evaluating the model
+            model_1.eval()
 
-        y_pred_dis_1 = np.empty(0)
-        y_true_dis = np.empty(0)
+            y_pred_dis_1 = np.empty(0)
+            y_true_dis = np.empty(0)
 
-        y_pred_sev_1 = np.empty(0)
-        y_true_sev = np.empty(0)
+            y_pred_sev_1 = np.empty(0)
+            y_true_sev = np.empty(0)
 
-        with torch.no_grad():
-            for i, (images, labels_dis, labels_sev) in tqdm(enumerate(test_loader)):
-                # Loading images on gpu
-                if torch.cuda.is_available():
-                    images, labels_dis, labels_sev = images.cuda(), labels_dis.cuda(), labels_sev.cuda()
+            with torch.no_grad():
+                for i, (images, labels_dis, labels_sev) in tqdm(enumerate(test_loader)):
+                    # Loading images on gpu
+                    if torch.cuda.is_available():
+                        images, labels_dis, labels_sev = images.cuda(), labels_dis.cuda(), labels_sev.cuda()
 
-                # pass images through the network
-                outputs_dis, outputs_sev = model_1(images)
+                    # pass images through the network
+                    outputs_dis, outputs_sev = model_1(images)
 
-                #### Compute metrics
+                    #### Compute metrics
 
-                # Biotic stress
-                pred = torch.max(outputs_dis.data, 1)[1]
+                    # Biotic stress
+                    pred = torch.max(outputs_dis.data, 1)[1]
 
-                y_pred_dis_1 = np.concatenate( (y_pred_dis_1, pred.data.cpu().numpy()) )
-                y_true_dis = np.concatenate( (y_true_dis, labels_dis.data.cpu().numpy()) )
+                    y_pred_dis_1 = np.concatenate( (y_pred_dis_1, pred.data.cpu().numpy()) )
+                    y_true_dis = np.concatenate( (y_true_dis, labels_dis.data.cpu().numpy()) )
 
-                # Severity
-                pred = torch.max(outputs_sev.data, 1)[1]
+                    # Severity
+                    pred = torch.max(outputs_sev.data, 1)[1]
 
-                y_pred_sev_1 = np.concatenate( (y_pred_sev_1, pred.data.cpu().numpy()) )
-                y_true_sev = np.concatenate( (y_true_sev, labels_sev.data.cpu().numpy()) )
-
-
-
-        # Loading model 2
-        model_2 = torch.load('net_weights/' + clf_label[self.opt.select_clf] + '/' + self.opt.filename2 + '.pth')
-        model_2.cuda()
-        # tell to pytorch that we are evaluating the model
-        model_2.eval()
-
-        y_pred_dis_2 = np.empty(0)
-        y_true_dis = np.empty(0)
-
-        y_pred_sev_2 = np.empty(0)
-        y_true_sev = np.empty(0)
-
-        with torch.no_grad():
-            for i, (images, labels_dis, labels_sev) in tqdm(enumerate(test_loader)):
-                # Loading images on gpu
-                if torch.cuda.is_available():
-                    images, labels_dis, labels_sev = images.cuda(), labels_dis.cuda(), labels_sev.cuda()
-
-                # pass images through the network
-                outputs_dis, outputs_sev = model_2(images)
-
-                #### Compute metrics
-
-                # Biotic stress
-                pred = torch.max(outputs_dis.data, 1)[1]
-
-                y_pred_dis_2 = np.concatenate( (y_pred_dis_2, pred.data.cpu().numpy()) )
-                y_true_dis = np.concatenate( (y_true_dis, labels_dis.data.cpu().numpy()) )
-
-                # Severity
-                pred = torch.max(outputs_sev.data, 1)[1]
-
-                y_pred_sev_2 = np.concatenate( (y_pred_sev_2, pred.data.cpu().numpy()) )
-                y_true_sev = np.concatenate( (y_true_sev, labels_sev.data.cpu().numpy()) )
+                    y_pred_sev_1 = np.concatenate( (y_pred_sev_1, pred.data.cpu().numpy()) )
+                    y_true_sev = np.concatenate( (y_true_sev, labels_sev.data.cpu().numpy()) )
 
 
-        # Loading model 2
-        model_3 = torch.load('net_weights/' + clf_label[self.opt.select_clf] + '/' + self.opt.filename3 + '.pth')
-        model_3.cuda()
-        # tell to pytorch that we are evaluating the model
-        model_3.eval()
 
-        y_pred_dis_3 = np.empty(0)
-        y_true_dis = np.empty(0)
+            # Loading model 2
+            model_2 = torch.load('net_weights/' + clf_label[self.opt.select_clf] + '/' + self.opt.filename2 + '.pth')
+            model_2.cuda()
+            # tell to pytorch that we are evaluating the model
+            model_2.eval()
 
-        y_pred_sev_3 = np.empty(0)
-        y_true_sev = np.empty(0)
+            y_pred_dis_2 = np.empty(0)
+            y_true_dis = np.empty(0)
 
-        with torch.no_grad():
-            for i, (images, labels_dis, labels_sev) in tqdm(enumerate(test_loader)):
-                # Loading images on gpu
-                if torch.cuda.is_available():
-                    images, labels_dis, labels_sev = images.cuda(), labels_dis.cuda(), labels_sev.cuda()
+            y_pred_sev_2 = np.empty(0)
+            y_true_sev = np.empty(0)
 
-                # pass images through the network
-                outputs_dis, outputs_sev = model_3(images)
+            with torch.no_grad():
+                for i, (images, labels_dis, labels_sev) in tqdm(enumerate(test_loader)):
+                    # Loading images on gpu
+                    if torch.cuda.is_available():
+                        images, labels_dis, labels_sev = images.cuda(), labels_dis.cuda(), labels_sev.cuda()
 
-                #### Compute metrics
+                    # pass images through the network
+                    outputs_dis, outputs_sev = model_2(images)
 
-                # Biotic stress
-                pred = torch.max(outputs_dis.data, 1)[1]
+                    #### Compute metrics
 
-                y_pred_dis_3 = np.concatenate( (y_pred_dis_3, pred.data.cpu().numpy()) )
-                y_true_dis = np.concatenate( (y_true_dis, labels_dis.data.cpu().numpy()) )
+                    # Biotic stress
+                    pred = torch.max(outputs_dis.data, 1)[1]
 
-                # Severity
-                pred = torch.max(outputs_sev.data, 1)[1]
+                    y_pred_dis_2 = np.concatenate( (y_pred_dis_2, pred.data.cpu().numpy()) )
+                    y_true_dis = np.concatenate( (y_true_dis, labels_dis.data.cpu().numpy()) )
 
-                y_pred_sev_3 = np.concatenate( (y_pred_sev_3, pred.data.cpu().numpy()) )
-                y_true_sev = np.concatenate( (y_true_sev, labels_sev.data.cpu().numpy()) )
+                    # Severity
+                    pred = torch.max(outputs_sev.data, 1)[1]
 
-        
-        #Ensembling
-        y_pred_dis = []
-        for i in range (len(y_pred_dis_1)):
-            a = np.concatenate(([y_pred_dis_1[i]],[y_pred_dis_2[i]],[y_pred_dis_3[i]]), axis = 0).tolist()
-            b = max(a,key=a.count)
-            y_pred_dis.append(b)
+                    y_pred_sev_2 = np.concatenate( (y_pred_sev_2, pred.data.cpu().numpy()) )
+                    y_true_sev = np.concatenate( (y_true_sev, labels_sev.data.cpu().numpy()) )
 
-        y_pred_sev = []
-        for i in range (len(y_pred_sev_1)):
-            a = np.concatenate(([y_pred_sev_1[i]],[y_pred_sev_2[i]],[y_pred_sev_3[i]]), axis = 0).tolist()
-            a = max(a,key=a.count)
-            y_pred_sev.append(a)
-        
-        # Biotic stress
-        acc = accuracy_score(y_true_dis, y_pred_dis)
-        pr = precision_score(y_true_dis, y_pred_dis, average='macro')
-        re = recall_score(y_true_dis, y_pred_dis, average='macro')
-        fs = f1_score(y_true_dis, y_pred_dis, average='macro')
 
-        f = open('results/' + clf_label[self.opt.select_clf] + '/' + '--ensemble.csv', 'a')
-        f.write('acc,prec,rec,fs\n%.2f,%.2f,%.2f,%.2f\n' % (acc*100, pr*100, re*100, fs*100))
-        
-        labels_dis = [ 'Healthy', 'Leaf miner', 'Rust', 'Phoma', 'Cercospora' ]
-        cm = confusion_matrix(y_true_dis, y_pred_dis, labels = list(range(0,5)))
-        fp = open('results/' + clf_label[self.opt.select_clf] + '/' + 'ensemble' + '-dis-cm.pkl', 'wb')
-        pickle.dump(cm, fp)
-        fp.close()
+            # Loading model 2
+            model_3 = torch.load('net_weights/' + clf_label[self.opt.select_clf] + '/' + self.opt.filename3 + '.pth')
+            model_3.cuda()
+            # tell to pytorch that we are evaluating the model
+            model_3.eval()
 
-        plot_confusion_matrix(cm=cm, target_names=labels_dis, title=' ', output_name= clf_label[self.opt.select_clf] + '/' + 'ensemble_dis')
+            y_pred_dis_3 = np.empty(0)
+            y_true_dis = np.empty(0)
 
-        # Severity
-        acc = accuracy_score(y_true_sev, y_pred_sev)
-        pr = precision_score(y_true_sev, y_pred_sev, average='macro')
-        re = recall_score(y_true_sev, y_pred_sev, average='macro')
-        fs = f1_score(y_true_sev, y_pred_sev, average='macro')
+            y_pred_sev_3 = np.empty(0)
+            y_true_sev = np.empty(0)
 
-        f.write('%.2f,%.2f,%.2f,%.2f\n' % (acc*100, pr*100, re*100, fs*100))
+            with torch.no_grad():
+                for i, (images, labels_dis, labels_sev) in tqdm(enumerate(test_loader)):
+                    # Loading images on gpu
+                    if torch.cuda.is_available():
+                        images, labels_dis, labels_sev = images.cuda(), labels_dis.cuda(), labels_sev.cuda()
 
-        labels_sev = [ 'Healthy', 'Very low', 'Low', 'High', 'Very high' ]
-        cm = confusion_matrix(y_true_sev, y_pred_sev, labels = list(range(0,5)))
-        fp = open('results/' + clf_label[self.opt.select_clf] + '/' + 'ensemble' + '-sev-cm.pkl', 'wb')
-        pickle.dump(cm, fp)
-        fp.close()
+                    # pass images through the network
+                    outputs_dis, outputs_sev = model_3(images)
 
-        plot_confusion_matrix(cm=cm, target_names=labels_dis, title=' ', output_name= clf_label[self.opt.select_clf] + '/' + 'ensemble_sev')
+                    #### Compute metrics
 
-        return y_true_dis, y_pred_dis, y_true_sev, y_pred_sev
+                    # Biotic stress
+                    pred = torch.max(outputs_dis.data, 1)[1]
+
+                    y_pred_dis_3 = np.concatenate( (y_pred_dis_3, pred.data.cpu().numpy()) )
+                    y_true_dis = np.concatenate( (y_true_dis, labels_dis.data.cpu().numpy()) )
+
+                    # Severity
+                    pred = torch.max(outputs_sev.data, 1)[1]
+
+                    y_pred_sev_3 = np.concatenate( (y_pred_sev_3, pred.data.cpu().numpy()) )
+                    y_true_sev = np.concatenate( (y_true_sev, labels_sev.data.cpu().numpy()) )
+
+            
+            #Ensembling
+            y_pred_dis = []
+            for i in range (len(y_pred_dis_1)):
+                a = np.concatenate(([y_pred_dis_1[i]],[y_pred_dis_2[i]],[y_pred_dis_3[i]]), axis = 0).tolist()
+                b = max(a,key=a.count)
+                y_pred_dis.append(b)
+
+            y_pred_sev = []
+            for i in range (len(y_pred_sev_1)):
+                a = np.concatenate(([y_pred_sev_1[i]],[y_pred_sev_2[i]],[y_pred_sev_3[i]]), axis = 0).tolist()
+                a = max(a,key=a.count)
+                y_pred_sev.append(a)
+            
+            # Biotic stress
+            acc = accuracy_score(y_true_dis, y_pred_dis)
+            pr = precision_score(y_true_dis, y_pred_dis, average='macro')
+            re = recall_score(y_true_dis, y_pred_dis, average='macro')
+            fs = f1_score(y_true_dis, y_pred_dis, average='macro')
+
+            f = open('results/' + clf_label[self.opt.select_clf] + '/' + self.opt.voting + 'Voting-ensemble.csv', 'a')
+            f.write('acc,prec,rec,fs\n%.2f,%.2f,%.2f,%.2f\n' % (acc*100, pr*100, re*100, fs*100))
+            
+            labels_dis = [ 'Healthy', 'Leaf miner', 'Rust', 'Phoma', 'Cercospora' ]
+            cm = confusion_matrix(y_true_dis, y_pred_dis, labels = list(range(0,5)))
+            fp = open('results/' + clf_label[self.opt.select_clf] + '/' + 'SoftVoting-ensemble' + '-dis-cm.pkl', 'wb')
+            pickle.dump(cm, fp)
+            fp.close()
+
+            plot_confusion_matrix(cm=cm, target_names=labels_dis, title=' ', output_name= clf_label[self.opt.select_clf] + '/' + self.opt.voting + 'Voting-ensemble_dis')
+
+            # Severity
+            acc = accuracy_score(y_true_sev, y_pred_sev)
+            pr = precision_score(y_true_sev, y_pred_sev, average='macro')
+            re = recall_score(y_true_sev, y_pred_sev, average='macro')
+            fs = f1_score(y_true_sev, y_pred_sev, average='macro')
+
+            f.write('%.2f,%.2f,%.2f,%.2f\n' % (acc*100, pr*100, re*100, fs*100))
+
+            labels_sev = [ 'Healthy', 'Very low', 'Low', 'High', 'Very high' ]
+            cm = confusion_matrix(y_true_sev, y_pred_sev, labels = list(range(0,5)))
+            fp = open('results/' + clf_label[self.opt.select_clf] + '/' + 'HardVoting-ensemble' + '-sev-cm.pkl', 'wb')
+            pickle.dump(cm, fp)
+            fp.close()
+
+            plot_confusion_matrix(cm=cm, target_names=labels_sev, title=' ', output_name= clf_label[self.opt.select_clf] + '/' + self.opt.voting + 'Voting-ensemble_sev')
+
+            return y_true_dis, y_pred_dis, y_true_sev, y_pred_sev
+        else :
+            # Dataset
+            _, _, test_loader = data_loader(self.opt)
+
+            # Loading model 1
+            model_1 = torch.load('net_weights/' + clf_label[self.opt.select_clf] + '/' + self.opt.filename + '.pth')
+            model_2 = torch.load('net_weights/' + clf_label[self.opt.select_clf] + '/' + self.opt.filename2 + '.pth')
+            model_3 = torch.load('net_weights/' + clf_label[self.opt.select_clf] + '/' + self.opt.filename3 + '.pth')
+            model_1.cuda()
+            model_2.cuda()
+            model_3.cuda()
+            # tell to pytorch that we are evaluating the model
+            model_1.eval()
+            model_2.eval()
+            model_3.eval()
+
+            y_pred_dis_1 = np.empty(0)
+            y_pred_dis_2 = np.empty(0)
+            y_pred_dis_3 = np.empty(0)
+            y_pred_dis = np.empty(0)
+            y_true_dis = np.empty(0)
+
+            y_pred_sev_1 = np.empty(0)
+            y_pred_sev_2 = np.empty(0)
+            y_pred_sev_3 = np.empty(0)
+            y_pred_sev = np.empty(0)
+            y_true_sev = np.empty(0)
+
+            
+
+            with torch.no_grad():
+                for i, (images, labels_dis, labels_sev) in tqdm(enumerate(test_loader)):
+                    # Loading images on gpu
+                    if torch.cuda.is_available():
+                        images, labels_dis, labels_sev = images.cuda(), labels_dis.cuda(), labels_sev.cuda()
+
+                    # pass images through the network
+                    outputs_dis_1, outputs_sev_1 = model_1(images)
+                    outputs_dis_2, outputs_sev_2 = model_2(images)
+                    outputs_dis_3, outputs_sev_3 = model_3(images)
+
+                    proba_dis_1 = outputs_dis_1.data.cpu().numpy()
+                    proba_dis_2 = outputs_dis_2.data.cpu().numpy()
+                    proba_dis_3 = outputs_dis_3.data.cpu().numpy()
+                    proba_sev_1 = outputs_sev_1.data.cpu().numpy()
+                    proba_sev_2 = outputs_sev_2.data.cpu().numpy()
+                    proba_sev_3 = outputs_sev_3.data.cpu().numpy()
+                    for j in range(len(proba_dis_1)):
+                        proba_dis = []
+                        proba_sev = []
+                        for k in range(len(proba_dis_1[j])):
+                            proba_dis.append(mean([proba_dis_1[j][k],proba_dis_2[j][k],proba_dis_3[j][k]]))
+                            proba_sev.append(mean([proba_sev_1[j][k],proba_sev_2[j][k],proba_sev_3[j][k]]))
+                        pred_dis = np.argmax([proba_dis], axis=1)
+                        pred_sev = np.argmax([proba_sev], axis=1)
+                        
+                        y_pred_dis = np.concatenate( (y_pred_dis, pred_dis) )                    
+                        y_pred_sev = np.concatenate( (y_pred_sev, pred_sev) )                    
+
+            
+                    y_true_dis = np.concatenate( (y_true_dis, labels_dis.data.cpu().numpy()) )                    
+                    y_true_sev = np.concatenate( (y_true_sev, labels_sev.data.cpu().numpy()) )
+           
+            # Biotic stress
+            acc = accuracy_score(y_true_dis, y_pred_dis)
+            pr = precision_score(y_true_dis, y_pred_dis, average='macro')
+            re = recall_score(y_true_dis, y_pred_dis, average='macro')
+            fs = f1_score(y_true_dis, y_pred_dis, average='macro')
+
+            f = open('results/' + clf_label[self.opt.select_clf] + '/' + self.opt.voting + 'Voting-ensemble.csv', 'a')
+            f.write('acc,prec,rec,fs\n%.2f,%.2f,%.2f,%.2f\n' % (acc*100, pr*100, re*100, fs*100))
+            
+            labels_dis = [ 'Healthy', 'Leaf miner', 'Rust', 'Phoma', 'Cercospora' ]
+            cm = confusion_matrix(y_true_dis, y_pred_dis, labels = list(range(0,5)))
+            fp = open('results/' + clf_label[self.opt.select_clf] + '/' + 'SoftVoting-ensemble' + '-dis-cm.pkl', 'wb')
+            pickle.dump(cm, fp)
+            fp.close()
+
+            plot_confusion_matrix(cm=cm, target_names=labels_dis, title=' ', output_name= clf_label[self.opt.select_clf] + '/' + self.opt.voting + 'Voting-ensemble_dis')
+
+            # Severity
+            acc = accuracy_score(y_true_sev, y_pred_sev)
+            pr = precision_score(y_true_sev, y_pred_sev, average='macro')
+            re = recall_score(y_true_sev, y_pred_sev, average='macro')
+            fs = f1_score(y_true_sev, y_pred_sev, average='macro')
+
+            f.write('%.2f,%.2f,%.2f,%.2f\n' % (acc*100, pr*100, re*100, fs*100))
+
+            labels_sev = [ 'Healthy', 'Very low', 'Low', 'High', 'Very high' ]
+            cm = confusion_matrix(y_true_sev, y_pred_sev, labels = list(range(0,5)))
+            fp = open('results/' + clf_label[self.opt.select_clf] + '/' + 'SoftVoting-ensemble' + '-sev-cm.pkl', 'wb')
+            pickle.dump(cm, fp)
+            fp.close()
+
+            plot_confusion_matrix(cm=cm, target_names=labels_sev, title=' ', output_name= clf_label[self.opt.select_clf] + '/' + self.opt.voting + 'Voting-ensemble_sev')
+
+            return y_true_dis, y_pred_dis, y_true_sev, y_pred_sev
+            
     
     def get_n_params(self):
         model = torch.load('net_weights/' + clf_label[self.opt.select_clf] +'/' + self.opt.filename + '.pth')

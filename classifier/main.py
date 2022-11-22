@@ -72,6 +72,12 @@ if __name__ == "__main__":
         help="Network weights output file name.",
         default="default",
     )
+    parser.add_argument(
+        "--voting",
+        type=str,
+        help="Select Soft or Hard Voting",
+        default="Soft",
+    )
     parser.add_argument("--train", help="Run in training mode.", action="store_true")
     parser.add_argument("--test", help="Run in test mode.", action="store_true")
     parser.add_argument("--ensemble", help="Run in test ensemble mode.", action="store_true")
