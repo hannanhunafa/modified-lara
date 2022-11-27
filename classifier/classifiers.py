@@ -157,14 +157,12 @@ def data_loader(opt):
             transforms.ColorJitter(brightness=0.25, contrast=0.25, saturation=0.25),
             transforms.ToTensor(),
             transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
-            # transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
             ])
 
     val_transforms=transforms.Compose([
             transforms.Resize((224, 224)),
             transforms.ToTensor(),
             transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
-            # transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
             ])
 
     # Dataset
@@ -750,16 +748,16 @@ class MultiTaskClf:
             re = recall_score(y_true_dis, y_pred_dis, average='macro')
             fs = f1_score(y_true_dis, y_pred_dis, average='macro')
 
-            f = open('results/' + clf_label[self.opt.select_clf] + '/' + self.opt.voting + 'Voting-ensemble.csv', 'a')
+            f = open('results/' + clf_label[self.opt.select_clf] + '/' + self.opt.savefile + '-HardVoting.csv', 'a')
             f.write('acc,prec,rec,fs\n%.2f,%.2f,%.2f,%.2f\n' % (acc*100, pr*100, re*100, fs*100))
             
             labels_dis = [ 'Healthy', 'Leaf miner', 'Rust', 'Phoma', 'Cercospora' ]
             cm = confusion_matrix(y_true_dis, y_pred_dis, labels = list(range(0,5)))
-            fp = open('results/' + clf_label[self.opt.select_clf] + '/' + 'SoftVoting-ensemble' + '-dis-cm.pkl', 'wb')
+            fp = open('results/' + clf_label[self.opt.select_clf] + '/' + self.opt.savefile +'-HardVoting' + '-dis-cm.pkl', 'wb')
             pickle.dump(cm, fp)
             fp.close()
 
-            plot_confusion_matrix(cm=cm, target_names=labels_dis, title=' ', output_name= clf_label[self.opt.select_clf] + '/' + self.opt.voting + 'Voting-ensemble_dis')
+            plot_confusion_matrix(cm=cm, target_names=labels_dis, title=' ', output_name= clf_label[self.opt.select_clf] + '/' + self.opt.savefile+ '-HardVoting-dis')
 
             # Severity
             acc = accuracy_score(y_true_sev, y_pred_sev)
@@ -771,11 +769,11 @@ class MultiTaskClf:
 
             labels_sev = [ 'Healthy', 'Very low', 'Low', 'High', 'Very high' ]
             cm = confusion_matrix(y_true_sev, y_pred_sev, labels = list(range(0,5)))
-            fp = open('results/' + clf_label[self.opt.select_clf] + '/' + 'HardVoting-ensemble' + '-sev-cm.pkl', 'wb')
+            fp = open('results/' + clf_label[self.opt.select_clf] + '/' + self.opt.savefile +'-HardVoting' + '-sev-cm.pkl', 'wb')
             pickle.dump(cm, fp)
             fp.close()
 
-            plot_confusion_matrix(cm=cm, target_names=labels_sev, title=' ', output_name= clf_label[self.opt.select_clf] + '/' + self.opt.voting + 'Voting-ensemble_sev')
+            plot_confusion_matrix(cm=cm, target_names=labels_sev, title=' ', output_name= clf_label[self.opt.select_clf] + '/' + self.opt.savefile+ '-HardVoting-sev')
 
             return y_true_dis, y_pred_dis, y_true_sev, y_pred_sev
         else :
@@ -847,16 +845,16 @@ class MultiTaskClf:
             re = recall_score(y_true_dis, y_pred_dis, average='macro')
             fs = f1_score(y_true_dis, y_pred_dis, average='macro')
 
-            f = open('results/' + clf_label[self.opt.select_clf] + '/' + self.opt.voting + 'Voting-ensemble.csv', 'a')
+            f = open('results/' + clf_label[self.opt.select_clf] + '/' + self.opt.savefile + '-SoftVoting.csv', 'a')
             f.write('acc,prec,rec,fs\n%.2f,%.2f,%.2f,%.2f\n' % (acc*100, pr*100, re*100, fs*100))
             
             labels_dis = [ 'Healthy', 'Leaf miner', 'Rust', 'Phoma', 'Cercospora' ]
             cm = confusion_matrix(y_true_dis, y_pred_dis, labels = list(range(0,5)))
-            fp = open('results/' + clf_label[self.opt.select_clf] + '/' + 'SoftVoting-ensemble' + '-dis-cm.pkl', 'wb')
+            fp = open('results/' + clf_label[self.opt.select_clf] + '/' + self.opt.savefile +'-SoftVoting' + '-dis-cm.pkl', 'wb')
             pickle.dump(cm, fp)
             fp.close()
 
-            plot_confusion_matrix(cm=cm, target_names=labels_dis, title=' ', output_name= clf_label[self.opt.select_clf] + '/' + self.opt.voting + 'Voting-ensemble_dis')
+            plot_confusion_matrix(cm=cm, target_names=labels_dis, title=' ', output_name= clf_label[self.opt.select_clf] + '/' + self.opt.savefile+ '-SoftVoting-dis')
 
             # Severity
             acc = accuracy_score(y_true_sev, y_pred_sev)
@@ -868,11 +866,11 @@ class MultiTaskClf:
 
             labels_sev = [ 'Healthy', 'Very low', 'Low', 'High', 'Very high' ]
             cm = confusion_matrix(y_true_sev, y_pred_sev, labels = list(range(0,5)))
-            fp = open('results/' + clf_label[self.opt.select_clf] + '/' + 'SoftVoting-ensemble' + '-sev-cm.pkl', 'wb')
+            fp = open('results/' + clf_label[self.opt.select_clf] + '/' + self.opt.savefile +'-SoftVoting' + '-sev-cm.pkl', 'wb')
             pickle.dump(cm, fp)
             fp.close()
 
-            plot_confusion_matrix(cm=cm, target_names=labels_sev, title=' ', output_name= clf_label[self.opt.select_clf] + '/' + self.opt.voting + 'Voting-ensemble_sev')
+            plot_confusion_matrix(cm=cm, target_names=labels_sev, title=' ', output_name= clf_label[self.opt.select_clf] + '/' + self.opt.savefile+ '-SoftVoting-sev')
 
             return y_true_dis, y_pred_dis, y_true_sev, y_pred_sev
             

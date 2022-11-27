@@ -72,6 +72,13 @@ if __name__ == "__main__":
         help="Network weights output file name.",
         default="default",
     )
+
+    parser.add_argument(
+        "--savefile",
+        type=str,
+        help="Ensemble Savefile Name",
+        default="default",
+    )
     parser.add_argument(
         "--voting",
         type=str,
