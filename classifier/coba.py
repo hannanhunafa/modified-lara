@@ -1,10 +1,19 @@
-import numpy as np
-from statistics import mean
+import cv2
+image_path = 'dataset/74.jpg'
+bgr = cv2.imread(image_path)
 
-lst1 = [1,2,3]
-lst2 = [2,3,4]
-lst3 = [3,4,5]
-lst_ave = []
-for i in range(len(lst1)):
-    lst_ave.append(mean([lst1[i],lst2[i],lst3[i]]))
-print(lst_ave)
+lab = cv2.cvtColor(bgr, cv2.COLOR_BGR2LAB)
+
+lab_planes = cv2.split(lab)
+
+clahe = cv2.createCLAHE(clipLimit=)
+
+lab_planes[0] = clahe.apply(lab_planes[0])
+
+lab = cv2.merge(lab_planes)
+
+bgr = cv2.cvtColor(lab, cv2.COLOR_LAB2BGR)
+
+cv2.imshow('clahe',bgr)
+
+cv2.waitKey(0) 
