@@ -10,7 +10,7 @@ for image in tqdm(os.listdir('leaf/')):
 
     lab_planes = cv2.split(lab)
 
-    clahe = cv2.createCLAHE(clipLimit=1.5)
+    clahe = cv2.createCLAHE(clipLimit=0.5)
 
     lab_planes[0] = clahe.apply(lab_planes[0])
 
