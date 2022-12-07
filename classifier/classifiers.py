@@ -570,6 +570,8 @@ class MultiTaskClf:
         f = open('results/' + clf_label[self.opt.select_clf] + '/' + self.opt.filename + '.csv', 'a')
         f.write('acc,prec,rec,fs\n%.2f,%.2f,%.2f,%.2f\n' % (acc*100, pr*100, re*100, fs*100))
 
+        print('acc,prec,rec,fs\n%.2f,%.2f,%.2f,%.2f\n' % (acc*100, pr*100, re*100, fs*100))
+
         if self.opt.select_clf == 0:
             labels_dis = [ 'Healthy', 'Leaf miner', 'Rust', 'Phoma', 'Cercospora' ]
             cm = confusion_matrix(y_true_dis, y_pred_dis, labels = list(range(0,5)))
@@ -593,6 +595,7 @@ class MultiTaskClf:
         fs = f1_score(y_true_sev, y_pred_sev, average='macro')
 
         f.write('%.2f,%.2f,%.2f,%.2f\n' % (acc*100, pr*100, re*100, fs*100))
+        print('%.2f,%.2f,%.2f,%.2f\n' % (acc*100, pr*100, re*100, fs*100))
 
         if self.opt.select_clf == 0:
             labels_sev = [ 'Healthy', 'Very low', 'Low', 'High', 'Very high' ]
@@ -750,6 +753,7 @@ class MultiTaskClf:
 
             f = open('results/' + clf_label[self.opt.select_clf] + '/' + self.opt.savefile + '-HardVoting.csv', 'a')
             f.write('acc,prec,rec,fs\n%.2f,%.2f,%.2f,%.2f\n' % (acc*100, pr*100, re*100, fs*100))
+            print('acc,prec,rec,fs\n%.2f,%.2f,%.2f,%.2f\n' % (acc*100, pr*100, re*100, fs*100))
             
             labels_dis = [ 'Healthy', 'Leaf miner', 'Rust', 'Phoma', 'Cercospora' ]
             cm = confusion_matrix(y_true_dis, y_pred_dis, labels = list(range(0,5)))
@@ -766,6 +770,7 @@ class MultiTaskClf:
             fs = f1_score(y_true_sev, y_pred_sev, average='macro')
 
             f.write('%.2f,%.2f,%.2f,%.2f\n' % (acc*100, pr*100, re*100, fs*100))
+            print('%.2f,%.2f,%.2f,%.2f\n' % (acc*100, pr*100, re*100, fs*100))
 
             labels_sev = [ 'Healthy', 'Very low', 'Low', 'High', 'Very high' ]
             cm = confusion_matrix(y_true_sev, y_pred_sev, labels = list(range(0,5)))
@@ -847,6 +852,7 @@ class MultiTaskClf:
 
             f = open('results/' + clf_label[self.opt.select_clf] + '/' + self.opt.savefile + '-SoftVoting.csv', 'a')
             f.write('acc,prec,rec,fs\n%.2f,%.2f,%.2f,%.2f\n' % (acc*100, pr*100, re*100, fs*100))
+            print('acc,prec,rec,fs\n%.2f,%.2f,%.2f,%.2f\n' % (acc*100, pr*100, re*100, fs*100))
             
             labels_dis = [ 'Healthy', 'Leaf miner', 'Rust', 'Phoma', 'Cercospora' ]
             cm = confusion_matrix(y_true_dis, y_pred_dis, labels = list(range(0,5)))
@@ -863,6 +869,7 @@ class MultiTaskClf:
             fs = f1_score(y_true_sev, y_pred_sev, average='macro')
 
             f.write('%.2f,%.2f,%.2f,%.2f\n' % (acc*100, pr*100, re*100, fs*100))
+            print('%.2f,%.2f,%.2f,%.2f\n' % (acc*100, pr*100, re*100, fs*100))
 
             labels_sev = [ 'Healthy', 'Very low', 'Low', 'High', 'Very high' ]
             cm = confusion_matrix(y_true_sev, y_pred_sev, labels = list(range(0,5)))

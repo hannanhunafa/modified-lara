@@ -107,7 +107,7 @@ if __name__ == "__main__":
             help="Path of the dataset csv file.",
             default="dataset/dataset.csv",
         )
-        parser.add_argument("--images_dir", type=str, default="dataset/clahe")
+        parser.add_argument("--images_dir", type=str, default="dataset/leaf")
         Clf = MultiTaskClf(parser) if options.select_clf == 0 else OneTaskClf(parser)
     
     elif options.select_clf > 3 :
