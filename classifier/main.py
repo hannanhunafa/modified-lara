@@ -16,7 +16,7 @@ if __name__ == "__main__":
         default="sgd",
     )
     parser.add_argument(
-        "--batch_size", type=int, help="Set images batch size", default=32
+        "--batch_size", type=int, help="Set images batch size", default=8
     )
     parser.add_argument(
         "--weight_decay", type=float, help="Set L2 parameter norm penalty", default=5e-4
@@ -34,7 +34,7 @@ if __name__ == "__main__":
         default="resnet50",
     )
     parser.add_argument(
-        "--epochs", type=int, help="Set the number of epochs.", default = 100
+        "--epochs", type=int, help="Set the number of epochs.", default = 20
     )
     parser.add_argument(
         "--pretrained",

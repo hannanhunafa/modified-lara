@@ -1,19 +1,16 @@
-import cv2
-image_path = 'dataset/74.jpg'
-bgr = cv2.imread(image_path)
-
-lab = cv2.cvtColor(bgr, cv2.COLOR_BGR2LAB)
-
-lab_planes = cv2.split(lab)
-
-clahe = cv2.createCLAHE(clipLimit=)
-
-lab_planes[0] = clahe.apply(lab_planes[0])
-
-lab = cv2.merge(lab_planes)
-
-bgr = cv2.cvtColor(lab, cv2.COLOR_LAB2BGR)
-
-cv2.imshow('clahe',bgr)
-
-cv2.waitKey(0) 
+import torch
+import torchvision.transforms as transforms
+from PIL import Image
+  
+# Read the image from computer
+input_img = Image.open('422.jpg')
+  
+# define a transform
+transform = transforms.ColorJitter(
+    brightness=(0.7,0.9))
+  
+# apply the above transform on image
+output_img = transform(input_img)
+  
+# display result
+output_img.show()

@@ -30,6 +30,19 @@ class CoffeeLeavesDataset(Dataset):
         self.select_dataset = select_dataset
         self.transformations = transforms
         self.extension = extension
+
+        # self.fold = fold
+        # self.select_dataset = select_dataset
+        # self.transformations = transforms
+        # self.extension = extension
+        # self.images_dir = 'dataset/leaf'
+
+        # if dataset == 'train':
+        #     self.data = pd.read_csv('dataset/train_bag3.csv')
+        # elif dataset == 'val':
+        #     self.data = pd.read_csv('dataset/val_bag3.csv')
+        # elif dataset == 'test':
+        #     self.data = pd.read_csv('dataset/test_bag.csv')
         
     def __len__(self):
         return len(self.data)
