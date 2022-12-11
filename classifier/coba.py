@@ -6,8 +6,7 @@ from PIL import Image
 input_img = Image.open('422.jpg')
   
 # define a transform
-transform = transforms.ColorJitter(
-    brightness=(0.7,0.9))
+transform = transforms.RandomAffine(degrees=(0, 0), shear = (-45,45))
   
 # apply the above transform on image
 output_img = transform(input_img)

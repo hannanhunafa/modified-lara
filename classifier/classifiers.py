@@ -157,10 +157,14 @@ def data_loader(opt):
             # transforms.RandomApply([transforms.RandomRotation(45)], 0.25),
             # transforms.ColorJitter(brightness=0.25, contrast=0.25, saturation=0.25),
             #wongbong
-            transforms.RandomHorizontalFlip(0.5),
-            transforms.RandomApply([transforms.RandomRotation(45), transforms.RandomRotation(135)], 0.25),
-            transforms.RandomApply([transforms.GaussianBlur(kernel_size=(5, 9), sigma=(0.1, 5))], 0.25),
-            transforms.RandomApply([transforms.ColorJitter(brightness=(0.7,0.9))],0.25),
+            # transforms.RandomHorizontalFlip(0.5),
+            # transforms.RandomApply([transforms.RandomRotation(45), transforms.RandomRotation(135)], 0.25),
+            # transforms.RandomApply([transforms.GaussianBlur(kernel_size=(5, 9), sigma=(0.1, 5))], 0.25),
+            # transforms.RandomApply([transforms.ColorJitter(brightness=(0.7,0.9))],0.25),
+            #Korzhebin
+            transforms.RandomApply([transforms.RandomAffine(degrees=(0, 0), shear = (-45,45))], 0.25),
+            transforms.RandomApply([transforms.RandomAutocontrast()], 0.25),
+            transforms.RandomApply([transforms.RandomRotation(45)], 0.25),
             transforms.ToTensor(),
             transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
             ])
@@ -788,17 +792,17 @@ class MultiTaskClf:
             plot_confusion_matrix(cm=cm, target_names=labels_sev, title=' ', output_name= clf_label[self.opt.select_clf] + '/' + self.opt.savefile+ '-HardVoting-sev')
 
             return y_true_dis, y_pred_dis, y_true_sev, y_pred_sev
-        else :
+        else : #ensemble soft
             # Dataset
             _, _, test_loader = data_loader(self.opt)
 
             # Loading model 1
             model_1 = torch.load('net_weights/' + clf_label[self.opt.select_clf] + '/' + '2-multi-' + self.opt.filename + '.pth')
-            # model_2 = torch.load('net_weights/' + clf_label[self.opt.select_clf] + '/' + '2-noaug-' + self.opt.filename + '.pth')
+            model_2 = torch.load('net_weights/' + clf_label[self.opt.select_clf] + '/' + '2-aug2-' + self.opt.filename + '.pth')
             model_3 = torch.load('net_weights/' + clf_label[self.opt.select_clf] + '/' + '2-aug-' + self.opt.filename + '.pth')
 
             model_1.cuda()
-            # model_2.cuda()
+            model_2.cuda()
             model_3.cuda()
             # model_4.cuda()
             # model_5.cuda()
@@ -808,7 +812,7 @@ class MultiTaskClf:
             # model_9.cuda()
             # tell to pytorch that we are evaluating the model
             model_1.eval()
-            # model_2.eval()
+            model_2.eval()
             model_3.eval()
             # model_4.eval()
             # model_5.eval()
@@ -851,7 +855,7 @@ class MultiTaskClf:
 
                     # pass images through the network
                     outputs_dis_1, outputs_sev_1 = model_1(images)
-                    # outputs_dis_2, outputs_sev_2 = model_2(images)
+                    outputs_dis_2, outputs_sev_2 = model_2(images)
                     outputs_dis_3, outputs_sev_3 = model_3(images)
                     # outputs_dis_4, outputs_sev_4 = model_4(images)
                     # outputs_dis_5, outputs_sev_5 = model_5(images)
@@ -861,7 +865,7 @@ class MultiTaskClf:
                     # outputs_dis_9, outputs_sev_9 = model_9(images)
 
                     proba_dis_1 = outputs_dis_1.data.cpu().numpy()
-                    # proba_dis_2 = outputs_dis_2.data.cpu().numpy()
+                    proba_dis_2 = outputs_dis_2.data.cpu().numpy()
                     proba_dis_3 = outputs_dis_3.data.cpu().numpy()
                     # proba_dis_4 = outputs_dis_4.data.cpu().numpy()
                     # proba_dis_5 = outputs_dis_5.data.cpu().numpy()
@@ -872,7 +876,7 @@ class MultiTaskClf:
 
 
                     proba_sev_1 = outputs_sev_1.data.cpu().numpy()
-                    # proba_sev_2 = outputs_sev_2.data.cpu().numpy()
+                    proba_sev_2 = outputs_sev_2.data.cpu().numpy()
                     proba_sev_3 = outputs_sev_3.data.cpu().numpy()
                     # proba_sev_4 = outputs_sev_4.data.cpu().numpy()
                     # proba_sev_5 = outputs_sev_5.data.cpu().numpy()
@@ -887,7 +891,7 @@ class MultiTaskClf:
                         proba_sev = []
                         for k in range(len(proba_dis_1[j])):
                             prob_dis_1 = weights[0]*proba_dis_1[j][k]
-                            # prob_dis_2 = weights[1]*proba_dis_2[j][k]
+                            prob_dis_2 = weights[1]*proba_dis_2[j][k]
                             prob_dis_3 = weights[2]*proba_dis_3[j][k]
                             # prob_dis_4 = proba_dis_4[j][k]
                             # prob_dis_5 = proba_dis_5[j][k]
@@ -897,7 +901,7 @@ class MultiTaskClf:
                             # prob_dis_9 = proba_dis_9[j][k]
 
                             prob_sev_1 = weights[0]*proba_sev_1[j][k]
-                            # prob_sev_2 = weights[1]*proba_sev_2[j][k]
+                            prob_sev_2 = weights[1]*proba_sev_2[j][k]
                             prob_sev_3 = weights[2]*proba_sev_3[j][k]
                             # prob_sev_4 = proba_sev_4[j][k]
                             # prob_sev_5 = proba_sev_5[j][k]
@@ -908,8 +912,8 @@ class MultiTaskClf:
 
                             # proba_dis.append(mean([prob_dis_1,prob_dis_2,prob_dis_3,prob_dis_4,prob_dis_5,prob_dis_6,prob_dis_7,prob_dis_8,prob_dis_9]))
                             # proba_sev.append(mean([prob_sev_1,prob_sev_2,prob_sev_3,prob_sev_4,prob_sev_5,prob_sev_6,prob_sev_7,prob_sev_8,prob_sev_9]))
-                            proba_dis.append(mean([prob_dis_1,prob_dis_3]))
-                            proba_sev.append(mean([prob_sev_1,prob_sev_3]))
+                            proba_dis.append(mean([prob_dis_1,prob_dis_2,prob_dis_3]))
+                            proba_sev.append(mean([prob_sev_1,prob_sev_2,prob_sev_3]))
                         pred_dis = np.argmax([proba_dis], axis=1)
                         pred_sev = np.argmax([proba_sev], axis=1)
                         
